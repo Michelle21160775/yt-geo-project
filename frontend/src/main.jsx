@@ -29,7 +29,24 @@ function OAuthCallback() {
 }
 
 function AppWrapper() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  useEffect(() => {
+    // Check if this is a Google OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userParam = urlParams.get('user');
+
+    if (token && userParam) {
+      localStorage.setItem('token', token);
+      const userData = JSON.parse(decodeURIComponent(userParam));
+      localStorage.setItem('user', JSON.stringify(userData));
+      // Clean URL and reload to update state
+      window.history.replaceState({}, document.title, '/');
+      window.location.reload();
+    }
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

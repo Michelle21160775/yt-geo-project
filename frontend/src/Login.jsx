@@ -204,24 +204,56 @@ function Login({ onLoginSuccess }) {
 
         {/* Form Container */}
         <div className="bg-[#1a1a24] rounded-2xl p-6 lg:p-8 space-y-5 lg:space-y-6">
+          {/* Tab Buttons */}
+          <div className="flex gap-2 mb-6">
+            <button
+              type="button"
+              onClick={() => setIsRegister(false)}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
+                !isRegister
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsRegister(true)}
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
+                isRegister
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              Registrarse
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
+              <label className="block text-sm font-medium text-purple-200 mb-2">
+                Correo Electrónico
+              </label>
               <input
                 type="email"
-                placeholder="User"
+                placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3.5 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition font-medium"
+                className="w-full px-4 py-3.5 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium"
               />
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-purple-200 mb-2">
+                Contraseña
+              </label>
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3.5 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition font-medium"
+                className="w-full px-4 py-3.5 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium"
               />
             </div>
 
@@ -234,20 +266,21 @@ function Login({ onLoginSuccess }) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 px-4 bg-[#c8a8d4] hover:bg-[#b898c4] text-[#2a2a3a] font-bold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {isLoading ? (isRegister ? 'Registrando...' : 'Iniciando...') : 'Login'}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isRegister ? 'Registrando...' : 'Iniciando...'}
+                </span>
+              ) : (
+                isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'
+              )}
             </button>
           </form>
-
-          <div className="text-center">
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-sm text-gray-400 hover:text-gray-300 transition"
-            >
-              {isRegister ? 'Volver a Login' : 'Registrarse'}
-            </button>
-          </div>
 
           {/* Divider */}
           <div className="relative">
