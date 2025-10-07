@@ -29,6 +29,8 @@ function App({ user, onLogout }) {
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [selectedChannel, setSelectedChannel] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(position => {
@@ -69,6 +71,16 @@ function App({ user, onLogout }) {
         if (e.key === 'Enter') {
             handleSearch();
         }
+    };
+
+    const openChannelModal = (channel) => {
+        setSelectedChannel(channel);
+        setIsModalOpen(true);
+    };
+
+    const closeChannelModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => setSelectedChannel(null), 300);
     };
 
     return (
@@ -156,21 +168,22 @@ function App({ user, onLogout }) {
                     </div>
                 </div>
 
-                {/* Video Grid */}
+                {/* Results Grid */}
                 {videos.length > 0 && (
                     <div>
                         <h3 className="text-2xl font-bold mb-6">Resultados ({videos.length})</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {videos.map((video, idx) => {
-                                if (video.id && video.id.kind === 'youtube#video' && video.id.videoId) {
+                            {videos.map((item, idx) => {
+                                // Video card
+                                if (item.id && item.id.kind === 'youtube#video' && item.id.videoId) {
                                     return (
-                                        <div key={video.id.videoId} className="bg-[#1a1a24] rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all group">
+                                        <div key={item.id.videoId} className="bg-[#1a1a24] rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all group">
                                             <div className="relative aspect-video">
                                                 <iframe
                                                     width="100%"
                                                     height="100%"
-                                                    src={`https://www.youtube.com/embed/${video.id.videoId}`}
-                                                    title={video.snippet.title}
+                                                    src={`https://www.youtube.com/embed/${item.id.videoId}`}
+                                                    title={item.snippet.title}
                                                     frameBorder="0"
                                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                     allowFullScreen
@@ -178,28 +191,62 @@ function App({ user, onLogout }) {
                                                 ></iframe>
                                             </div>
                                             <div className="p-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded-full">
+                                                        Video
+                                                    </span>
+                                                </div>
                                                 <h3 className="text-sm font-medium line-clamp-2 text-gray-200 group-hover:text-purple-300 transition-colors">
-                                                    {video.snippet.title}
+                                                    {item.snippet.title}
                                                 </h3>
                                             </div>
                                         </div>
                                     );
-                                } else {
+                                }
+                                // Channel card
+                                else if (item.id && item.id.kind === 'youtube#channel' && item.id.channelId) {
                                     return (
-                                        <div key={video.id.channelId || idx} className="bg-[#1a1a24] rounded-xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all">
-                                            <a href={`https://www.youtube.com/channel/${video.id.channelId || ''}`} target="_blank" rel="noopener noreferrer">
-                                                <div className="relative aspect-video">
-                                                    <img src={video.snippet.thumbnails.medium.url} alt={video.snippet.title} className="absolute inset-0 w-full h-full object-cover" />
+                                        <div
+                                            key={item.id.channelId}
+                                            onClick={() => openChannelModal(item)}
+                                            className="bg-[#1a1a24] rounded-xl overflow-hidden border border-pink-500/30 hover:border-pink-500/70 transition-all cursor-pointer group"
+                                        >
+                                            <div className="relative aspect-video bg-gradient-to-br from-pink-900/30 to-purple-900/30">
+                                                <img
+                                                    src={item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url}
+                                                    alt={item.snippet.title}
+                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                />
+                                                <div className="absolute top-3 right-3">
+                                                    <div className="bg-pink-500/90 backdrop-blur-sm rounded-full p-2">
+                                                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                                        </svg>
+                                                    </div>
                                                 </div>
-                                                <div className="p-4">
-                                                    <h3 className="text-sm font-medium line-clamp-2 text-gray-200 hover:text-purple-300 transition-colors">
-                                                        {video.snippet.title}
-                                                    </h3>
+                                            </div>
+                                            <div className="p-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="px-2 py-0.5 bg-pink-500/20 text-pink-300 text-xs rounded-full flex items-center gap-1">
+                                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                                        </svg>
+                                                        Canal
+                                                    </span>
                                                 </div>
-                                            </a>
+                                                <h3 className="text-sm font-medium line-clamp-2 text-gray-200 group-hover:text-pink-300 transition-colors">
+                                                    {item.snippet.title}
+                                                </h3>
+                                                {item.snippet.description && (
+                                                    <p className="text-xs text-gray-400 line-clamp-2 mt-2">
+                                                        {item.snippet.description}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 }
+                                return null;
                             })}
                         </div>
                     </div>
@@ -235,6 +282,124 @@ function App({ user, onLogout }) {
                     </div>
                 )}
             </main>
+
+            {/* Channel Modal */}
+            {isModalOpen && selectedChannel && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={closeChannelModal}
+                >
+                    <div
+                        className="bg-[#1a1a24] rounded-2xl border border-pink-500/50 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="relative">
+                            <div className="h-48 bg-gradient-to-br from-pink-900/50 to-purple-900/50 rounded-t-2xl overflow-hidden">
+                                <img
+                                    src={selectedChannel.snippet.thumbnails?.high?.url || selectedChannel.snippet.thumbnails?.medium?.url}
+                                    alt={selectedChannel.snippet.title}
+                                    className="w-full h-full object-cover opacity-50"
+                                />
+                            </div>
+                            <button
+                                onClick={closeChannelModal}
+                                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+                            >
+                                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            {/* Channel Avatar */}
+                            <div className="absolute -bottom-12 left-8">
+                                <img
+                                    src={selectedChannel.snippet.thumbnails?.medium?.url || selectedChannel.snippet.thumbnails?.default?.url}
+                                    alt={selectedChannel.snippet.title}
+                                    className="w-24 h-24 rounded-full border-4 border-[#1a1a24] shadow-lg"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-8 pt-16">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h2 className="text-2xl font-bold text-white">
+                                            {selectedChannel.snippet.title}
+                                        </h2>
+                                        <span className="px-3 py-1 bg-pink-500/20 text-pink-300 text-sm rounded-full flex items-center gap-1">
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                            </svg>
+                                            Canal
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-400">
+                                        {selectedChannel.snippet.channelTitle}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Channel Description */}
+                            {selectedChannel.snippet.description && (
+                                <div className="mb-6">
+                                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Descripción</h3>
+                                    <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line">
+                                        {selectedChannel.snippet.description}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Channel Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                {selectedChannel.snippet.publishedAt && (
+                                    <div className="bg-[#0a0a0a] rounded-lg p-4">
+                                        <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            </svg>
+                                            <span>Creado el</span>
+                                        </div>
+                                        <p className="text-white font-medium">
+                                            {new Date(selectedChannel.snippet.publishedAt).toLocaleDateString('es-MX', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-3">
+                                <a
+                                    href={`https://www.youtube.com/channel/${selectedChannel.id.channelId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                    Ver en YouTube
+                                </a>
+                                <button
+                                    onClick={closeChannelModal}
+                                    className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg transition-colors"
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
