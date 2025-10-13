@@ -5,6 +5,9 @@ import ResultsDisplay from './components/ResultsDisplay';
 import FloatingPlayer from './components/FloatingPlayer';
 import ChannelDetailModal from './components/ChannelDetailModal';
 import WatchPage from './components/WatchPage';
+import ProfilePage from './components/ProfilePage';
+import FavoritesPage from './components/FavoritesPage';
+import { useFavorites } from './hooks/useFavorites';
 import './styles/scrollbar.css';
 
 const LogoutIcon = () => (
@@ -50,6 +53,18 @@ function App({ user, onLogout }) {
     const [showWatchPage, setShowWatchPage] = useState(false);
     const [recommendedVideos, setRecommendedVideos] = useState([]);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [showProfilePage, setShowProfilePage] = useState(false);
+    const [currentUser, setCurrentUser] = useState(user);
+    const [showFavoritesPage, setShowFavoritesPage] = useState(false);
+
+    // Favorites hook
+    const {
+        favorites,
+        favoriteCount,
+        toggleVideoFavorite,
+        isVideoFavorited,
+        loadFavorites
+    } = useFavorites(currentUser?.id || currentUser?.email);
 
     // Function to get user initials
     const getUserInitials = (email) => {
@@ -171,9 +186,14 @@ function App({ user, onLogout }) {
         }
     };
 
-    const handleAddToFavorites = (videoId) => {
-        // TODO: Implement favorites functionality
-        console.log('Add to favorites:', videoId);
+    const handleAddToFavorites = async (videoData) => {
+        try {
+            const result = await toggleVideoFavorite(videoData);
+            return result;
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            setError('Error al gestionar favoritos');
+        }
     };
 
     const closeChannelModal = () => {
@@ -203,9 +223,30 @@ function App({ user, onLogout }) {
         setIsProfileDropdownOpen(!isProfileDropdownOpen);
     };
 
+    const handleProfilePageOpen = () => {
+        setShowProfilePage(true);
+        setIsProfileDropdownOpen(false);
+    };
+
+    const handleProfilePageClose = () => {
+        setShowProfilePage(false);
+    };
+
+    const handleProfileUpdate = (updatedProfile) => {
+        setCurrentUser(prev => ({
+            ...prev,
+            ...updatedProfile
+        }));
+        console.log('Profile updated:', updatedProfile);
+        // Aquí puedes agregar la lógica para sincronizar con el backend
+    };
+
     const handleFavoritesClick = () => {
-        // Por ahora solo console.log, posteriormente será la navegación a favoritos
-        console.log('Clicked Favorites button');
+        setShowFavoritesPage(true);
+    };
+
+    const handleFavoritesPageClose = () => {
+        setShowFavoritesPage(false);
     };
 
     return (
@@ -257,7 +298,15 @@ function App({ user, onLogout }) {
                                         className="flex items-center justify-center w-10 h-10 bg-purple-600 hover:bg-purple-700 rounded-full transition-colors text-white font-medium text-sm"
                                         title="Perfil"
                                     >
-                                        {getUserInitials(user?.email)}
+                                        {currentUser?.profileImage ? (
+                                            <img
+                                                src={currentUser.profileImage}
+                                                alt="Profile"
+                                                className="w-full h-full rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            getUserInitials(currentUser?.email)
+                                        )}
                                     </button>
                                     
                                     {/* Dropdown Menu */}
@@ -265,13 +314,10 @@ function App({ user, onLogout }) {
                                         <div className="absolute right-0 mt-2 w-48 bg-[#1a1a24] border border-white/10 rounded-lg shadow-lg z-50">
                                             <div className="py-2">
                                                 <div className="px-4 py-2 text-sm text-gray-400 border-b border-white/10">
-                                                    {user?.email}
+                                                    {currentUser?.email}
                                                 </div>
                                                 <button
-                                                    onClick={() => {
-                                                        setIsProfileDropdownOpen(false);
-                                                        console.log('Navigate to Profile');
-                                                    }}
+                                                    onClick={handleProfilePageOpen}
                                                     className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
                                                 >
                                                     <ProfileIcon />
@@ -294,10 +340,15 @@ function App({ user, onLogout }) {
                                 
                                 <button
                                     onClick={handleFavoritesClick}
-                                    className="p-2 bg-pink-600/20 hover:bg-pink-600/30 rounded-lg transition-colors"
-                                    title="Favoritos"
+                                    className="relative p-2 bg-pink-600/20 hover:bg-pink-600/30 rounded-lg transition-colors"
+                                    title={`Favoritos (${favoriteCount})`}
                                 >
                                     <FavoritesIcon />
+                                    {favoriteCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                                            {favoriteCount > 99 ? '99+' : favoriteCount}
+                                        </span>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -327,6 +378,8 @@ function App({ user, onLogout }) {
                         geolocation={{ lat: location?.lat, lon: location?.lon, radius }}
                         onVideoClick={handleVideoClick}
                         onChannelClick={handleChannelClick}
+                        onAddToFavorites={handleAddToFavorites}
+                        isVideoFavorited={isVideoFavorited}
                     />
                 )}
 
@@ -371,6 +424,24 @@ function App({ user, onLogout }) {
                 />
             )}
             </div>
+
+            {/* Profile Page Modal */}
+            {showProfilePage && (
+                <ProfilePage
+                    user={currentUser}
+                    onUpdateProfile={handleProfileUpdate}
+                    onClose={handleProfilePageClose}
+                />
+            )}
+
+            {/* Favorites Page Modal */}
+            {showFavoritesPage && (
+                <FavoritesPage
+                    user={currentUser}
+                    onVideoClick={handleVideoClick}
+                    onClose={handleFavoritesPageClose}
+                />
+            )}
         </>
     );
 }
