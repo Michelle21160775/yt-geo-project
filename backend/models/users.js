@@ -1,22 +1,20 @@
-// Simple in-memory user store (replace with database in production)
-const users = [];
+// MongoDB user operations - delegates to userDB
+const userDB = require('./userDB');
 
-const findUserByEmail = (email) => {
-    return users.find(user => user.email === email);
+const findUserByEmail = async (email) => {
+    return await userDB.findUserByEmail(email);
 };
 
-const findUserById = (id) => {
-    return users.find(user => user.id === id);
+const findUserById = async (id) => {
+    const user = await userDB.findUserById(id);
+    if (user && user._id) {
+        user.id = user._id.toString();
+    }
+    return user;
 };
 
-const createUser = (userData) => {
-    const newUser = {
-        id: Date.now().toString(),
-        ...userData,
-        createdAt: new Date()
-    };
-    users.push(newUser);
-    return newUser;
+const createUser = async (userData) => {
+    return await userDB.createUser(userData);
 };
 
 module.exports = { findUserByEmail, findUserById, createUser };

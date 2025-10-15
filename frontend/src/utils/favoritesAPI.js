@@ -1,10 +1,13 @@
-// Utilities for managing favorites
-// This file contains mock functions that can be easily replaced with real API calls
+// Utilities for managing favorites with MongoDB backend integration
 
 const FAVORITES_STORAGE_KEY = 'videoFinder_favorites';
-const USE_LOCAL_STORAGE = true; // Set to false when integrating with backend
+const USE_LOCAL_STORAGE = false; // Using backend MongoDB API
+const API_BASE_URL = 'http://localhost:3001/api';
 
-// Mock API functions - Replace these with real API calls
+// Helper function to get auth token
+const getAuthToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
 
 /**
  * Fetch user's favorite videos
@@ -22,20 +25,20 @@ export const fetchUserFavorites = async (userId) => {
             return [];
         }
     }
-    
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/favorites`, {
-    //         headers: {
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         }
-    //     });
-    //     if (!response.ok) throw new Error('Failed to fetch favorites');
-    //     return await response.json();
-    // } catch (error) {
-    //     console.error('Error fetching favorites:', error);
-    //     throw error;
-    // }
+
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch favorites');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        return [];
+    }
 };
 
 /**
@@ -46,7 +49,6 @@ export const fetchUserFavorites = async (userId) => {
  */
 export const addToFavorites = async (userId, videoData) => {
     const favoriteData = {
-        id: `fav_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         videoId: videoData.videoId,
         title: videoData.title,
         thumbnail: videoData.thumbnail,
@@ -55,46 +57,53 @@ export const addToFavorites = async (userId, videoData) => {
         duration: videoData.duration || '0:00',
         views: videoData.views || '0 views',
         publishedTime: videoData.publishedTime || 'Unknown',
-        dateAdded: new Date().toISOString(),
         description: videoData.description || ''
     };
 
     if (USE_LOCAL_STORAGE) {
         // Mock implementation using localStorage
+        const localData = {
+            id: `fav_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            ...favoriteData,
+            dateAdded: new Date().toISOString()
+        };
         try {
             const currentFavorites = await fetchUserFavorites(userId);
-            
+
             // Check if already exists
             const exists = currentFavorites.some(fav => fav.videoId === videoData.videoId);
             if (exists) {
                 throw new Error('Video already in favorites');
             }
-            
-            const updatedFavorites = [favoriteData, ...currentFavorites];
+
+            const updatedFavorites = [localData, ...currentFavorites];
             localStorage.setItem(`${FAVORITES_STORAGE_KEY}_${userId}`, JSON.stringify(updatedFavorites));
-            return favoriteData;
+            return localData;
         } catch (error) {
             console.error('Error adding to favorites:', error);
             throw error;
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/favorites`, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         },
-    //         body: JSON.stringify(favoriteData)
-    //     });
-    //     if (!response.ok) throw new Error('Failed to add to favorites');
-    //     return await response.json();
-    // } catch (error) {
-    //     console.error('Error adding to favorites:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify(favoriteData)
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to add to favorites');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        throw error;
+    }
 };
 
 /**
@@ -117,19 +126,19 @@ export const removeFromFavorites = async (userId, favoriteId) => {
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/favorites/${favoriteId}`, {
-    //         method: 'DELETE',
-    //         headers: {
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         }
-    //     });
-    //     return response.ok;
-    // } catch (error) {
-    //     console.error('Error removing from favorites:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/favorites/${favoriteId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        throw error;
+    }
 };
 
 /**
@@ -171,26 +180,40 @@ export const getFavoriteByVideoId = async (userId, videoId) => {
  * @returns {Promise<{added: boolean, favorite: Object|null}>} Result of toggle operation
  */
 export const toggleFavorite = async (userId, videoData) => {
-    try {
-        const existingFavorite = await getFavoriteByVideoId(userId, videoData.videoId);
-        
-        if (existingFavorite) {
-            await removeFromFavorites(userId, existingFavorite.id);
-            return { added: false, favorite: null };
-        } else {
-            const newFavorite = await addToFavorites(userId, videoData);
-            return { added: true, favorite: newFavorite };
+    if (USE_LOCAL_STORAGE) {
+        try {
+            const existingFavorite = await getFavoriteByVideoId(userId, videoData.videoId);
+
+            if (existingFavorite) {
+                await removeFromFavorites(userId, existingFavorite.id);
+                return { added: false, favorite: null };
+            } else {
+                const newFavorite = await addToFavorites(userId, videoData);
+                return { added: true, favorite: newFavorite };
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            throw error;
         }
+    }
+
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/favorites/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify(videoData)
+        });
+        if (!response.ok) throw new Error('Failed to toggle favorite');
+        return await response.json();
     } catch (error) {
         console.error('Error toggling favorite:', error);
         throw error;
     }
 };
-
-// Helper function to get auth token (implement based on your auth system)
-// const getAuthToken = () => {
-//     return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-// };
 
 // Export configuration for easy switching between mock and real API
 export const favoritesConfig = {

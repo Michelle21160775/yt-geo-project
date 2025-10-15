@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { fetchUserFavorites, removeFromFavorites, generateMockFavorites } from '../utils/favoritesAPI';
-import { fetchUserHistory, removeFromHistory, clearAllHistory, generateMockHistory } from '../utils/historyAPI';
+import { fetchUserFavorites, removeFromFavorites } from '../utils/favoritesAPI';
+import { fetchUserHistory, removeFromHistory, clearAllHistory } from '../utils/historyAPI';
 
 const FavoritesPage = ({ user, onVideoClick, onClose }) => {
     const [activeTab, setActiveTab] = useState('favorites'); // 'favorites' or 'history'
@@ -77,15 +77,7 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
     // Fetch data functions
     const fetchFavorites = async () => {
         try {
-            let userFavorites = await fetchUserFavorites(user?.id || 'demo_user');
-            
-            if (userFavorites.length === 0) {
-                userFavorites = generateMockFavorites(5);
-                if (user?.id) {
-                    localStorage.setItem(`videoFinder_favorites_${user.id}`, JSON.stringify(userFavorites));
-                }
-            }
-            
+            const userFavorites = await fetchUserFavorites(user?.id || 'demo_user');
             setFavorites(userFavorites);
         } catch (error) {
             console.error('Error fetching favorites:', error);
@@ -95,15 +87,7 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
 
     const fetchHistory = async () => {
         try {
-            let userHistory = await fetchUserHistory(user?.id || 'demo_user');
-            
-            if (userHistory.length === 0) {
-                userHistory = generateMockHistory(10);
-                if (user?.id) {
-                    localStorage.setItem(`videoFinder_history_${user.id}`, JSON.stringify(userHistory));
-                }
-            }
-            
+            const userHistory = await fetchUserHistory(user?.id || 'demo_user');
             setHistory(userHistory);
         } catch (error) {
             console.error('Error fetching history:', error);

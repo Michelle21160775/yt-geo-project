@@ -8,18 +8,22 @@ passport.use(new GoogleStrategy({
     callbackURL: 'http://localhost:3001/api/auth/google/callback'
 },
 async (accessToken, refreshToken, profile, done) => {
-    const email = profile.emails[0].value;
-    let user = findUserByEmail(email);
+    try {
+        const email = profile.emails[0].value;
+        let user = await findUserByEmail(email);
 
-    if (!user) {
-        user = createUser({
-            email,
-            googleId: profile.id,
-            name: profile.displayName
-        });
+        if (!user) {
+            user = await createUser({
+                email,
+                googleId: profile.id,
+                name: profile.displayName
+            });
+        }
+
+        return done(null, user);
+    } catch (error) {
+        return done(error, null);
     }
-
-    return done(null, user);
 }));
 
 module.exports = passport;

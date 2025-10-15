@@ -3,15 +3,24 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const passport = require('./config/passport');
+const { connect } = require('./config/database');
+
+// Route imports
 const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
+const favoritesRoutes = require('./routes/favorites');
+const historyRoutes = require('./routes/history');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(passport.initialize());
 
-// Auth routes
+// API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/history', historyRoutes);
 
 // Función auxiliar para realizar llamadas a la API de YouTube
 async function youtubeApiCall(endpoint, params) {
@@ -283,6 +292,20 @@ app.post('/api/channel-videos', async (req, res) => {
 });
 
 const PORT = 3001;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en: http://localhost:${PORT}`);
-});
+
+// Initialize database and start server
+const startServer = async () => {
+    try {
+        await connect();
+        console.log('Database connected successfully');
+
+        app.listen(PORT, () => {
+            console.log(`Servidor corriendo en: http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+void startServer();

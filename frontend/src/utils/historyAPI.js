@@ -1,9 +1,14 @@
-// Utilities for managing watch history
-// This file contains mock functions that can be easily replaced with real API calls
+// Utilities for managing watch history with MongoDB backend integration
 
 const HISTORY_STORAGE_KEY = 'videoFinder_history';
-const USE_LOCAL_STORAGE = true; // Set to false when integrating with backend
+const USE_LOCAL_STORAGE = false; // Using backend MongoDB API
 const MAX_HISTORY_ITEMS = 100; // Limit history to prevent localStorage overflow
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Helper function to get auth token
+const getAuthToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
 
 /**
  * Fetch user's watch history
@@ -20,20 +25,20 @@ export const fetchUserHistory = async (userId) => {
             return [];
         }
     }
-    
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/history`, {
-    //         headers: {
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         }
-    //     });
-    //     if (!response.ok) throw new Error('Failed to fetch history');
-    //     return await response.json();
-    // } catch (error) {
-    //     console.error('Error fetching history:', error);
-    //     throw error;
-    // }
+
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch history');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching history:', error);
+        return [];
+    }
 };
 
 /**
@@ -44,7 +49,6 @@ export const fetchUserHistory = async (userId) => {
  */
 export const addToHistory = async (userId, videoData) => {
     const historyItem = {
-        id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         videoId: videoData.videoId,
         title: videoData.title,
         thumbnail: videoData.thumbnail,
@@ -53,50 +57,54 @@ export const addToHistory = async (userId, videoData) => {
         duration: videoData.duration || '0:00',
         views: videoData.views || '0 views',
         publishedTime: videoData.publishedTime || 'Unknown',
-        watchedAt: new Date().toISOString(),
         description: videoData.description || '',
         watchProgress: videoData.watchProgress || 0 // percentage of video watched
     };
 
     if (USE_LOCAL_STORAGE) {
+        const localItem = {
+            id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            ...historyItem,
+            watchedAt: new Date().toISOString()
+        };
         try {
             let currentHistory = await fetchUserHistory(userId);
-            
+
             // Remove existing entry for this video to avoid duplicates
             currentHistory = currentHistory.filter(item => item.videoId !== videoData.videoId);
-            
+
             // Add new entry at the beginning
-            currentHistory.unshift(historyItem);
-            
+            currentHistory.unshift(localItem);
+
             // Limit history size
             if (currentHistory.length > MAX_HISTORY_ITEMS) {
                 currentHistory = currentHistory.slice(0, MAX_HISTORY_ITEMS);
             }
-            
+
             localStorage.setItem(`${HISTORY_STORAGE_KEY}_${userId}`, JSON.stringify(currentHistory));
-            return historyItem;
+            return localItem;
         } catch (error) {
             console.error('Error adding to history:', error);
             throw error;
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/history`, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         },
-    //         body: JSON.stringify(historyItem)
-    //     });
-    //     if (!response.ok) throw new Error('Failed to add to history');
-    //     return await response.json();
-    // } catch (error) {
-    //     console.error('Error adding to history:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify(historyItem)
+        });
+        if (!response.ok) throw new Error('Failed to add to history');
+        return await response.json();
+    } catch (error) {
+        console.error('Error adding to history:', error);
+        throw error;
+    }
 };
 
 /**
@@ -118,19 +126,19 @@ export const removeFromHistory = async (userId, historyId) => {
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/history/${historyId}`, {
-    //         method: 'DELETE',
-    //         headers: {
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         }
-    //     });
-    //     return response.ok;
-    // } catch (error) {
-    //     console.error('Error removing from history:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/history/${historyId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error removing from history:', error);
+        throw error;
+    }
 };
 
 /**
@@ -149,19 +157,19 @@ export const clearAllHistory = async (userId) => {
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/history`, {
-    //         method: 'DELETE',
-    //         headers: {
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         }
-    //     });
-    //     return response.ok;
-    // } catch (error) {
-    //     console.error('Error clearing history:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error clearing history:', error);
+        throw error;
+    }
 };
 
 /**
@@ -175,8 +183,8 @@ export const updateWatchProgress = async (userId, videoId, progress) => {
     if (USE_LOCAL_STORAGE) {
         try {
             const currentHistory = await fetchUserHistory(userId);
-            const updatedHistory = currentHistory.map(item => 
-                item.videoId === videoId 
+            const updatedHistory = currentHistory.map(item =>
+                item.videoId === videoId
                     ? { ...item, watchProgress: progress, watchedAt: new Date().toISOString() }
                     : item
             );
@@ -188,21 +196,21 @@ export const updateWatchProgress = async (userId, videoId, progress) => {
         }
     }
 
-    // TODO: Replace with real API call
-    // try {
-    //     const response = await fetch(`/api/users/${userId}/history/${videoId}/progress`, {
-    //         method: 'PUT',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Authorization': `Bearer ${getAuthToken()}`
-    //         },
-    //         body: JSON.stringify({ progress })
-    //     });
-    //     return response.ok;
-    // } catch (error) {
-    //     console.error('Error updating watch progress:', error);
-    //     throw error;
-    // }
+    // Backend API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/history/progress`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({ videoId, progress })
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error updating watch progress:', error);
+        throw error;
+    }
 };
 
 // Export configuration for easy switching between mock and real API

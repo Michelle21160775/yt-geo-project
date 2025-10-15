@@ -186,9 +186,30 @@ function App({ user, onLogout }) {
         }
     };
 
-    const handleAddToFavorites = async (videoData) => {
+    const handleAddToFavorites = async (videoId, videoInfo) => {
         try {
+            // Format video data for favorites API
+            const videoData = {
+                videoId: videoId,
+                title: videoInfo?.title || 'Unknown Title',
+                thumbnail: videoInfo?.thumbnail || videoInfo?.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+                channel: videoInfo?.channel || videoInfo?.channel_title || 'Unknown Channel',
+                channelThumbnail: videoInfo?.channelThumbnail || 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',
+                duration: videoInfo?.duration || '0:00',
+                views: videoInfo?.views || videoInfo?.view_count || '0 views',
+                publishedTime: videoInfo?.publishedTime || videoInfo?.published_at || 'Unknown',
+                description: videoInfo?.description || ''
+            };
+
             const result = await toggleVideoFavorite(videoData);
+
+            // Show success message
+            if (result.added) {
+                console.log('Video added to favorites');
+            } else {
+                console.log('Video removed from favorites');
+            }
+
             return result;
         } catch (error) {
             console.error('Error toggling favorite:', error);

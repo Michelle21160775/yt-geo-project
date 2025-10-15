@@ -8,44 +8,54 @@ const router = express.Router();
 
 // Register endpoint
 router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+        }
+
+        const existingUser = await findUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ error: 'El usuario ya existe' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await createUser({ email, password: hashedPassword });
+
+        const token = generateToken(user);
+        res.json({ token, user: { id: user.id, email: user.email } });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ error: 'Error al registrar usuario' });
     }
-
-    const existingUser = findUserByEmail(email);
-    if (existingUser) {
-        return res.status(400).json({ error: 'El usuario ya existe' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = createUser({ email, password: hashedPassword });
-
-    const token = generateToken(user);
-    res.json({ token, user: { id: user.id, email: user.email } });
 });
 
 // Login endpoint
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+        }
+
+        const user = await findUserByEmail(email);
+        if (!user) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        const token = generateToken(user);
+        res.json({ token, user: { id: user.id, email: user.email } });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Error al iniciar sesión' });
     }
-
-    const user = findUserByEmail(email);
-    if (!user) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    const token = generateToken(user);
-    res.json({ token, user: { id: user.id, email: user.email } });
 });
 
 // Google OAuth callback
