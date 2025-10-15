@@ -224,6 +224,25 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         return email.charAt(0).toUpperCase();
     };
 
+    // Estado para mostrar/ocultar contraseña
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Icono de ojo
+    const EyeIcon = ({ open }) => (
+        open ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.07 21.07 0 0 1 5.06-7.94M1 1l22 22"></path>
+                <path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"></path>
+            </svg>
+        )
+    );
+x
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 profile-modal">
             <div className="bg-[#1a1a24] rounded-xl border border-white/10 w-full max-w-4xl max-h-[90vh] overflow-hidden profile-content">
@@ -344,7 +363,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                         name="name"
                                         value={profileData.name}
                                         onChange={handleProfileInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
                                             errors.name
                                                 ? 'border-red-500 focus:ring-red-400'
                                                 : 'border-white/10 focus:ring-purple-400'
@@ -365,7 +384,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                         name="email"
                                         value={profileData.email}
                                         onChange={handleProfileInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
                                             errors.email
                                                 ? 'border-red-500 focus:ring-red-400'
                                                 : 'border-white/10 focus:ring-purple-400'
@@ -386,7 +405,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                         name="phone"
                                         value={profileData.phone}
                                         onChange={handleProfileInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
                                             errors.phone
                                                 ? 'border-red-500 focus:ring-red-400'
                                                 : 'border-white/10 focus:ring-purple-400'
@@ -407,7 +426,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                         name="location"
                                         value={profileData.location}
                                         onChange={handleProfileInputChange}
-                                        className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors profile-input"
+                                        className="w-full px-4 py-3 text-white border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors profile-input"
                                         placeholder="Oaxaca, México"
                                     />
                                 </div>
@@ -422,7 +441,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     value={profileData.bio}
                                     onChange={handleProfileInputChange}
                                     rows={4}
-                                    className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors resize-none profile-input"
+                                    className="w-full px-4 py-3 text-white border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors resize-none profile-input"
                                     placeholder="Cuéntanos un poco sobre ti..."
                                 />
                             </div>
@@ -450,41 +469,30 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Contraseña actual *
-                                    </label>
-                                    <input
-                                        type="password"
-                                        name="currentPassword"
-                                        value={passwordData.currentPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.currentPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Tu contraseña actual"
-                                    />
-                                    {errors.currentPassword && (
-                                        <p className="text-red-400 text-sm mt-1">{errors.currentPassword}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Nueva contraseña *
                                     </label>
-                                    <input
-                                        type="password"
-                                        name="newPassword"
-                                        value={passwordData.newPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.newPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Tu nueva contraseña"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showNewPassword ? "text" : "password"}
+                                            name="newPassword"
+                                            value={passwordData.newPassword}
+                                            onChange={handlePasswordInputChange}
+                                            className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                                errors.newPassword
+                                                    ? 'border-red-500 focus:ring-red-400'
+                                                    : 'border-white/10 focus:ring-purple-400'
+                                            }`}
+                                            placeholder="Tu nueva contraseña"
+                                        />
+                                        <button
+                                            type="button"
+                                            tabIndex={-1}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                            onClick={() => setShowNewPassword(prev => !prev)}
+                                        >
+                                            <EyeIcon open={showNewPassword} />
+                                        </button>
+                                    </div>
                                     {errors.newPassword && (
                                         <p className="text-red-400 text-sm mt-1">{errors.newPassword}</p>
                                     )}
@@ -497,18 +505,28 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Confirmar nueva contraseña *
                                     </label>
-                                    <input
-                                        type="password"
-                                        name="confirmPassword"
-                                        value={passwordData.confirmPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 bg-[#0a0a0a] border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.confirmPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Confirma tu nueva contraseña"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            value={passwordData.confirmPassword}
+                                            onChange={handlePasswordInputChange}
+                                            className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                                errors.confirmPassword
+                                                    ? 'border-red-500 focus:ring-red-400'
+                                                    : 'border-white/10 focus:ring-purple-400'
+                                            }`}
+                                            placeholder="Confirma tu nueva contraseña"
+                                        />
+                                        <button
+                                            type="button"
+                                            tabIndex={-1}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                            onClick={() => setShowConfirmPassword(prev => !prev)}
+                                        >
+                                            <EyeIcon open={showConfirmPassword} />
+                                        </button>
+                                    </div>
                                     {errors.confirmPassword && (
                                         <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
                                     )}
