@@ -12,20 +12,9 @@ const getAuthToken = () => {
 
 /**
  * Fetch user's watch history
- * @param {string} userId - User ID
  * @returns {Promise<Array>} Array of watched videos
  */
-export const fetchUserHistory = async (userId) => {
-    if (USE_LOCAL_STORAGE) {
-        try {
-            const stored = localStorage.getItem(`${HISTORY_STORAGE_KEY}_${userId}`);
-            return stored ? JSON.parse(stored) : [];
-        } catch (error) {
-            console.error('Error fetching history from localStorage:', error);
-            return [];
-        }
-    }
-
+export const fetchUserHistory = async () => {
     // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/history`, {
@@ -61,35 +50,6 @@ export const addToHistory = async (userId, videoData) => {
         watchProgress: videoData.watchProgress || 0 // percentage of video watched
     };
 
-    if (USE_LOCAL_STORAGE) {
-        const localItem = {
-            id: `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            ...historyItem,
-            watchedAt: new Date().toISOString()
-        };
-        try {
-            let currentHistory = await fetchUserHistory(userId);
-
-            // Remove existing entry for this video to avoid duplicates
-            currentHistory = currentHistory.filter(item => item.videoId !== videoData.videoId);
-
-            // Add new entry at the beginning
-            currentHistory.unshift(localItem);
-
-            // Limit history size
-            if (currentHistory.length > MAX_HISTORY_ITEMS) {
-                currentHistory = currentHistory.slice(0, MAX_HISTORY_ITEMS);
-            }
-
-            localStorage.setItem(`${HISTORY_STORAGE_KEY}_${userId}`, JSON.stringify(currentHistory));
-            return localItem;
-        } catch (error) {
-            console.error('Error adding to history:', error);
-            throw error;
-        }
-    }
-
-    // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/history`, {
             method: 'POST',
@@ -218,88 +178,4 @@ export const historyConfig = {
     USE_LOCAL_STORAGE,
     HISTORY_STORAGE_KEY,
     MAX_HISTORY_ITEMS
-};
-
-// Mock data generator for development/testing
-export const generateMockHistory = (count = 10) => {
-    const mockVideos = [
-        {
-            videoId: 'dQw4w9WgXcQ',
-            title: 'Rick Astley - Never Gonna Give You Up (Official Video)',
-            thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-            channel: 'Rick Astley',
-            duration: '3:33',
-            views: '1.2B views',
-            publishedTime: '15 years ago',
-            description: 'The official video for "Never Gonna Give You Up" by Rick Astley...'
-        },
-        {
-            videoId: 'L_jWHffIx5E',
-            title: 'Smash Mouth - All Star (Official Music Video)',
-            thumbnail: 'https://i.ytimg.com/vi/L_jWHffIx5E/maxresdefault.jpg',
-            channel: 'Smash Mouth',
-            duration: '3:20',
-            views: '500M views',
-            publishedTime: '12 years ago',
-            description: 'Official music video for All Star by Smash Mouth...'
-        },
-        {
-            videoId: 'ZZ5LpwO-An4',
-            title: 'GANGNAM STYLE(강남스타일) PSY(싸이)',
-            thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/maxresdefault.jpg',
-            channel: 'officialpsy',
-            duration: '4:12',
-            views: '4.8B views',
-            publishedTime: '11 years ago',
-            description: 'PSY - GANGNAM STYLE (강남스타일) MV...'
-        },
-        {
-            videoId: 'kJQP7kiw5Fk',
-            title: 'Despacito ft. Daddy Yankee',
-            thumbnail: 'https://i.ytimg.com/vi/kJQP7kiw5Fk/maxresdefault.jpg',
-            channel: 'Luis Fonsi',
-            duration: '4:41',
-            views: '8.2B views',
-            publishedTime: '6 years ago',
-            description: 'Despacito" disponible ya en todas las plataformas...'
-        },
-        {
-            videoId: 'fJ9rUzIMcZQ',
-            title: 'Queen – Bohemian Rhapsody (Official Video Remastered)',
-            thumbnail: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/maxresdefault.jpg',
-            channel: 'Queen Official',
-            duration: '5:55',
-            views: '1.8B views',
-            publishedTime: '13 years ago',
-            description: 'Taken from A Night At The Opera, 1975...'
-        },
-        {
-            videoId: 'Zi_XLOBDo_Y',
-            title: 'Billie Eilish - bad guy (Official Music Video)',
-            thumbnail: 'https://i.ytimg.com/vi/DyDfgMOUjCI/maxresdefault.jpg',
-            channel: 'Billie Eilish',
-            duration: '3:14',
-            views: '1.1B views',
-            publishedTime: '4 years ago',
-            description: 'Official music video for "bad guy" by Billie Eilish...'
-        },
-        {
-            videoId: 'YQHsXMglC9A',
-            title: 'Adele - Hello (Official Music Video)',
-            thumbnail: 'https://i.ytimg.com/vi/YQHsXMglC9A/maxresdefault.jpg',
-            channel: 'Adele',
-            duration: '6:07',
-            views: '3.2B views',
-            publishedTime: '8 years ago',
-            description: 'Official music video for "Hello" by Adele...'
-        }
-    ];
-
-    return mockVideos.slice(0, count).map((video, index) => ({
-        id: `hist_mock_${index + 1}`,
-        ...video,
-        channelThumbnail: 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',
-        watchedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        watchProgress: Math.floor(Math.random() * 100)
-    }));
 };

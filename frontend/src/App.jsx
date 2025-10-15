@@ -9,6 +9,7 @@ import ProfilePage from './components/ProfilePage';
 import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
 import './styles/scrollbar.css';
+import { addToHistory } from './utils/historyAPI';
 
 const LogoutIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -56,6 +57,11 @@ function App({ user, onLogout }) {
     const [showProfilePage, setShowProfilePage] = useState(false);
     const [currentUser, setCurrentUser] = useState(user);
     const [showFavoritesPage, setShowFavoritesPage] = useState(false);
+    
+    const addVideoToHistory = async (videoInfo) => {
+        if (!currentUser) return;
+        await addToHistory(currentUser.id , videoInfo)
+    } 
 
     // Favorites hook
     const {
@@ -129,11 +135,12 @@ function App({ user, onLogout }) {
         }
     };
 
-    const handleVideoClick = (videoId, videoInfo = null) => {
+    const handleVideoClick = async (videoId, videoInfo = null) => {
         setCurrentVideoId(videoId);
         setCurrentVideoInfo(videoInfo);
         setShowWatchPage(true);
         setIsPlayerMinimized(false);
+        await addVideoToHistory({...videoInfo, videoId});
         
         // Get recommended videos (other videos from current search results)
         if (results) {
