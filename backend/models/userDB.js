@@ -10,9 +10,7 @@ const findUserByEmail = async (email) => {
 
 const findUserById = async (id) => {
     const db = getDb();
-    const objectId = ObjectId.isValid(id) ? new ObjectId(id) : null;
-    if (!objectId) return null;
-    return await db.collection(COLLECTION_NAME).findOne({ _id: objectId });
+    return await db.collection(COLLECTION_NAME).findOne({ email:id });
 };
 
 const findUserByGoogleId = async (googleId) => {

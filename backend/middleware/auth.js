@@ -15,7 +15,7 @@ const authenticate = async (req, res, next) => {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
 
-        const user = await findUserById(decoded.id);
+        const user = await findUserById(decoded.email);
         if (!user) {
             return res.status(401).json({ error: 'User not found' });
         }

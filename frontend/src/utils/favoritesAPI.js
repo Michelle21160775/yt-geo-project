@@ -1,7 +1,4 @@
-// Utilities for managing favorites with MongoDB backend integration
-
 const FAVORITES_STORAGE_KEY = 'videoFinder_favorites';
-const USE_LOCAL_STORAGE = false; // Using backend MongoDB API
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // Helper function to get auth token
@@ -15,18 +12,6 @@ const getAuthToken = () => {
  * @returns {Promise<Array>} Array of favorite videos
  */
 export const fetchUserFavorites = async (userId) => {
-    if (USE_LOCAL_STORAGE) {
-        // Mock implementation using localStorage
-        try {
-            const stored = localStorage.getItem(`${FAVORITES_STORAGE_KEY}_${userId}`);
-            return stored ? JSON.parse(stored) : [];
-        } catch (error) {
-            console.error('Error fetching favorites from localStorage:', error);
-            return [];
-        }
-    }
-
-    // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/favorites`, {
             headers: {
@@ -60,31 +45,6 @@ export const addToFavorites = async (userId, videoData) => {
         description: videoData.description || ''
     };
 
-    if (USE_LOCAL_STORAGE) {
-        // Mock implementation using localStorage
-        const localData = {
-            id: `fav_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            ...favoriteData,
-            dateAdded: new Date().toISOString()
-        };
-        try {
-            const currentFavorites = await fetchUserFavorites(userId);
-
-            // Check if already exists
-            const exists = currentFavorites.some(fav => fav.videoId === videoData.videoId);
-            if (exists) {
-                throw new Error('Video already in favorites');
-            }
-
-            const updatedFavorites = [localData, ...currentFavorites];
-            localStorage.setItem(`${FAVORITES_STORAGE_KEY}_${userId}`, JSON.stringify(updatedFavorites));
-            return localData;
-        } catch (error) {
-            console.error('Error adding to favorites:', error);
-            throw error;
-        }
-    }
-
     // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/favorites`, {
@@ -113,19 +73,6 @@ export const addToFavorites = async (userId, videoData) => {
  * @returns {Promise<boolean>} Success status
  */
 export const removeFromFavorites = async (userId, favoriteId) => {
-    if (USE_LOCAL_STORAGE) {
-        // Mock implementation using localStorage
-        try {
-            const currentFavorites = await fetchUserFavorites(userId);
-            const updatedFavorites = currentFavorites.filter(fav => fav.id !== favoriteId);
-            localStorage.setItem(`${FAVORITES_STORAGE_KEY}_${userId}`, JSON.stringify(updatedFavorites));
-            return true;
-        } catch (error) {
-            console.error('Error removing from favorites:', error);
-            throw error;
-        }
-    }
-
     // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/favorites/${favoriteId}`, {
@@ -180,24 +127,6 @@ export const getFavoriteByVideoId = async (userId, videoId) => {
  * @returns {Promise<{added: boolean, favorite: Object|null}>} Result of toggle operation
  */
 export const toggleFavorite = async (userId, videoData) => {
-    if (USE_LOCAL_STORAGE) {
-        try {
-            const existingFavorite = await getFavoriteByVideoId(userId, videoData.videoId);
-
-            if (existingFavorite) {
-                await removeFromFavorites(userId, existingFavorite.id);
-                return { added: false, favorite: null };
-            } else {
-                const newFavorite = await addToFavorites(userId, videoData);
-                return { added: true, favorite: newFavorite };
-            }
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
-            throw error;
-        }
-    }
-
-    // Backend API call
     try {
         const response = await fetch(`${API_BASE_URL}/favorites/toggle`, {
             method: 'POST',
@@ -217,49 +146,5 @@ export const toggleFavorite = async (userId, videoData) => {
 
 // Export configuration for easy switching between mock and real API
 export const favoritesConfig = {
-    USE_LOCAL_STORAGE,
     FAVORITES_STORAGE_KEY
-};
-
-// Mock data generator for development/testing
-export const generateMockFavorites = (count = 5) => {
-    const mockVideos = [
-        {
-            videoId: 'dQw4w9WgXcQ',
-            title: 'Rick Astley - Never Gonna Give You Up (Official Video)',
-            thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-            channel: 'Rick Astley',
-            duration: '3:33',
-            views: '1.2B views',
-            publishedTime: '15 years ago',
-            description: 'The official video for "Never Gonna Give You Up" by Rick Astley...'
-        },
-        {
-            videoId: 'L_jWHffIx5E',
-            title: 'Smash Mouth - All Star (Official Music Video)',
-            thumbnail: 'https://i.ytimg.com/vi/L_jWHffIx5E/maxresdefault.jpg',
-            channel: 'Smash Mouth',
-            duration: '3:20',
-            views: '500M views',
-            publishedTime: '12 years ago',
-            description: 'Official music video for All Star by Smash Mouth...'
-        },
-        {
-            videoId: 'ZZ5LpwO-An4',
-            title: 'GANGNAM STYLE(강남스타일) PSY(싸이)',
-            thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/maxresdefault.jpg',
-            channel: 'officialpsy',
-            duration: '4:12',
-            views: '4.8B views',
-            publishedTime: '11 years ago',
-            description: 'PSY - GANGNAM STYLE (강남스타일) MV...'
-        }
-    ];
-
-    return mockVideos.slice(0, count).map((video, index) => ({
-        id: `fav_mock_${index + 1}`,
-        ...video,
-        channelThumbnail: 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',
-        dateAdded: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-    }));
 };
