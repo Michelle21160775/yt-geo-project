@@ -12,6 +12,8 @@ const WatchPage = ({
   const playerRef = useRef(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const youtubePlayerRef = useRef(null);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [heartKey, setHeartKey] = useState(0); // Para forzar re-render de la animación
 
   // Utility functions
   const formatViewCount = (count) => {
@@ -85,6 +87,23 @@ const WatchPage = ({
     } catch (error) {
       return duration || "";
     }
+  };
+
+  // Handle add to favorites with animation
+  const handleAddToFavorites = () => {
+    // Trigger the heart animation with new key for re-render
+    setHeartKey(prev => prev + 1);
+    setShowHeartAnimation(true);
+    
+    // Call the original callback
+    if (onAddToFavorites) {
+      onAddToFavorites(videoId, videoInfo);
+    }
+    
+    // Hide animation after it completes
+    setTimeout(() => {
+      setShowHeartAnimation(false);
+    }, 2500); // Slightly longer duration for better effect
   };
 
   // YouTube Player Initialization
@@ -207,8 +226,85 @@ const WatchPage = ({
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="w-full max-w-4xl mx-auto p-6">
               {/* Video Player Container */}
-              <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-2xl mb-6">
+              <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-2xl mb-6 relative">
                 <div ref={playerRef} className="w-full h-full"></div>
+                
+                {/* Heart Animation Overlay */}
+                {showHeartAnimation && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Main central heart */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div
+                        key={`main-${heartKey}`}
+                        className="text-7xl"
+                        style={{
+                          animation: 'floatHeartMain 2.5s ease-out forwards',
+                          filter: 'drop-shadow(0 0 15px rgba(236, 72, 153, 0.8))'
+                        }}
+                      >
+                        ❤️
+                      </div>
+                    </div>
+                    
+                    {/* Smaller floating hearts */}
+                    {[...Array(4)].map((_, index) => (
+                      <div
+                        key={`heart-${heartKey}-${index}`}
+                        className="absolute text-4xl"
+                        style={{
+                          left: `${25 + index * 15}%`,
+                          top: '60%',
+                          animation: `floatHeartSmall 2s ease-out forwards`,
+                          animationDelay: `${index * 0.2}s`,
+                          filter: 'drop-shadow(0 0 8px rgba(236, 72, 153, 0.6))'
+                        }}
+                      >
+                        💖
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Custom CSS for heart animations */}
+                <style jsx>{`
+                  @keyframes floatHeartMain {
+                    0% {
+                      transform: scale(0) translateY(0px) rotate(0deg);
+                      opacity: 0;
+                    }
+                    15% {
+                      transform: scale(1.3) translateY(-15px) rotate(-5deg);
+                      opacity: 1;
+                    }
+                    30% {
+                      transform: scale(1.1) translateY(-30px) rotate(5deg);
+                      opacity: 1;
+                    }
+                    70% {
+                      transform: scale(0.9) translateY(-80px) rotate(-2deg);
+                      opacity: 0.7;
+                    }
+                    100% {
+                      transform: scale(0.5) translateY(-120px) rotate(0deg);
+                      opacity: 0;
+                    }
+                  }
+                  
+                  @keyframes floatHeartSmall {
+                    0% {
+                      transform: scale(0) translateY(0px) translateX(0px);
+                      opacity: 0;
+                    }
+                    20% {
+                      transform: scale(1) translateY(-10px) translateX(-5px);
+                      opacity: 0.8;
+                    }
+                    100% {
+                      transform: scale(0.3) translateY(-60px) translateX(10px);
+                      opacity: 0;
+                    }
+                  }
+                `}</style>
               </div>
 
               {/* Video Info and Controls */}
@@ -240,14 +336,12 @@ const WatchPage = ({
                     </button>
 
                     <button
-                      onClick={() =>
-                        onAddToFavorites && onAddToFavorites(videoId, videoInfo)
-                      }
-                      className="p-2 bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors text-white"
+                      onClick={handleAddToFavorites}
+                      className="p-2 bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors text-white group"
                       title="Agregar a favoritos"
                     >
                       <svg
-                        className="w-5 h-5"
+                        className="w-5 h-5 group-hover:scale-110 transition-transform"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
