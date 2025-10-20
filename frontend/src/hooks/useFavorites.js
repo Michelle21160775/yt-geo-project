@@ -12,9 +12,12 @@ export const useFavorites = (userId) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Check if user is guest
+    const isGuest = userId === 'guest' || !userId;
+
     // Fetch user favorites
     const loadFavorites = async () => {
-        if (!userId) return;
+        if (!userId || isGuest) return; // Don't load favorites for guests
         
         setLoading(true);
         setError(null);
@@ -31,7 +34,7 @@ export const useFavorites = (userId) => {
 
     // Add video to favorites
     const addFavorite = async (videoData) => {
-        if (!userId) return;
+        if (!userId || isGuest) return; // Don't allow guests to add favorites
         
         try {
             const newFavorite = await addToFavorites(userId, videoData);
@@ -46,7 +49,7 @@ export const useFavorites = (userId) => {
 
     // Remove video from favorites
     const removeFavorite = async (favoriteId) => {
-        if (!userId) return;
+        if (!userId || isGuest) return; // Don't allow guests to remove favorites
         
         try {
             await removeFromFavorites(userId, favoriteId);
@@ -72,7 +75,7 @@ export const useFavorites = (userId) => {
 
     // Toggle favorite status
     const toggleVideoFavorite = async (videoData) => {
-        if (!userId) return;
+        if (!userId || isGuest) return { added: false }; // Don't allow guests to toggle favorites
         
         try {
             const result = await toggleFavorite(userId, videoData);

@@ -8,6 +8,7 @@ const WatchPage = ({
   onAddToFavorites,
   onVideoSelect,
   recommendedVideos = [],
+  isGuestUser = false,
 }) => {
   const playerRef = useRef(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -91,6 +92,12 @@ const WatchPage = ({
 
   // Handle add to favorites with animation
   const handleAddToFavorites = () => {
+    // Prevent guests from adding favorites
+    if (isGuestUser) {
+      alert('Los usuarios invitados no pueden guardar favoritos. Por favor, inicia sesión.');
+      return;
+    }
+    
     // Trigger the heart animation with new key for re-render
     setHeartKey(prev => prev + 1);
     setShowHeartAnimation(true);
@@ -337,11 +344,16 @@ const WatchPage = ({
 
                     <button
                       onClick={handleAddToFavorites}
-                      className="p-2 bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors text-white group"
-                      title="Agregar a favoritos"
+                      disabled={isGuestUser}
+                      className={`p-2 rounded-lg transition-colors text-white group ${
+                        isGuestUser 
+                          ? 'bg-gray-600 cursor-not-allowed opacity-50' 
+                          : 'bg-pink-600 hover:bg-pink-700'
+                      }`}
+                      title={isGuestUser ? 'No disponible para invitados' : 'Agregar a favoritos'}
                     >
                       <svg
-                        className="w-5 h-5 group-hover:scale-110 transition-transform"
+                        className={`w-5 h-5 transition-transform ${!isGuestUser && 'group-hover:scale-110'}`}
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
