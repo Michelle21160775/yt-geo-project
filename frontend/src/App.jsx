@@ -7,6 +7,8 @@ import ChannelDetailModal from './components/ChannelDetailModal';
 import WatchPage from './components/WatchPage';
 import ProfilePage from './components/ProfilePage';
 import FavoritesPage from './components/FavoritesPage';
+import FloatingCommentButton from './components/FloatingCommentButton';
+import CommentsModal from './components/CommentsModal';
 import { useFavorites } from './hooks/useFavorites';
 import './styles/scrollbar.css';
 import { addToHistory } from './utils/historyAPI';
@@ -57,9 +59,13 @@ function App({ user, onLogout }) {
     const [showProfilePage, setShowProfilePage] = useState(false);
     const [currentUser, setCurrentUser] = useState(user);
     const [showFavoritesPage, setShowFavoritesPage] = useState(false);
+    const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
+    
+    // Check if user is guest
+    const isGuestUser = currentUser?.isGuest === true;
     
     const addVideoToHistory = async (videoInfo) => {
-        if (!currentUser) return;
+        if (!currentUser || isGuestUser) return; // Don't save history for guests
         await addToHistory(currentUser.id , videoInfo)
     } 
 
@@ -194,6 +200,13 @@ function App({ user, onLogout }) {
     };
 
     const handleAddToFavorites = async (videoId, videoInfo) => {
+        // Prevent guests from adding favorites
+        if (isGuestUser) {
+            setError('Los usuarios invitados no pueden guardar favoritos. Por favor, inicia sesión.');
+            setTimeout(() => setError(''), 3000);
+            return { added: false };
+        }
+        
         try {
             // Format video data for favorites API
             const videoData = {
@@ -252,6 +265,13 @@ function App({ user, onLogout }) {
     };
 
     const handleProfilePageOpen = () => {
+        // Prevent guests from accessing profile
+        if (isGuestUser) {
+            setError('Los usuarios invitados no tienen acceso al perfil. Por favor, inicia sesión.');
+            setTimeout(() => setError(''), 3000);
+            setIsProfileDropdownOpen(false);
+            return;
+        }
         setShowProfilePage(true);
         setIsProfileDropdownOpen(false);
     };
@@ -270,6 +290,12 @@ function App({ user, onLogout }) {
     };
 
     const handleFavoritesClick = () => {
+        // Prevent guests from accessing favorites
+        if (isGuestUser) {
+            setError('Los usuarios invitados no tienen acceso a favoritos. Por favor, inicia sesión.');
+            setTimeout(() => setError(''), 3000);
+            return;
+        }
         setShowFavoritesPage(true);
     };
 
@@ -289,6 +315,7 @@ function App({ user, onLogout }) {
                     onMinimize={handleMinimizeFromWatch}
                     onClose={closeWatchPage}
                     onAddToFavorites={handleAddToFavorites}
+                    isGuestUser={isGuestUser}
                 />
             )}
 
@@ -342,15 +369,17 @@ function App({ user, onLogout }) {
                                         <div className="absolute right-0 mt-2 w-48 bg-[#1a1a24] border border-white/10 rounded-lg shadow-lg z-50">
                                             <div className="py-2">
                                                 <div className="px-4 py-2 text-sm text-gray-400 border-b border-white/10">
-                                                    {currentUser?.email}
+                                                    {isGuestUser ? 'Invitado' : currentUser?.email}
                                                 </div>
-                                                <button
-                                                    onClick={handleProfilePageOpen}
-                                                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
-                                                >
-                                                    <ProfileIcon />
-                                                    Perfil
-                                                </button>
+                                                {!isGuestUser && (
+                                                    <button
+                                                        onClick={handleProfilePageOpen}
+                                                        className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <ProfileIcon />
+                                                        Perfil
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => {
                                                         setIsProfileDropdownOpen(false);
@@ -359,7 +388,7 @@ function App({ user, onLogout }) {
                                                     className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
                                                 >
                                                     <LogoutIcon />
-                                                    Cerrar Sesión
+                                                    {isGuestUser ? 'Iniciar Sesión' : 'Cerrar Sesión'}
                                                 </button>
                                             </div>
                                         </div>
@@ -368,11 +397,16 @@ function App({ user, onLogout }) {
                                 
                                 <button
                                     onClick={handleFavoritesClick}
-                                    className="relative p-2 bg-pink-600/20 hover:bg-pink-600/30 rounded-lg transition-colors"
-                                    title={`Favoritos (${favoriteCount})`}
+                                    className={`relative p-2 rounded-lg transition-colors ${
+                                        isGuestUser 
+                                            ? 'bg-gray-600/20 hover:bg-gray-600/30 cursor-not-allowed opacity-50' 
+                                            : 'bg-pink-600/20 hover:bg-pink-600/30'
+                                    }`}
+                                    title={isGuestUser ? 'No disponible para invitados' : `Favoritos (${favoriteCount})`}
+                                    disabled={isGuestUser}
                                 >
                                     <FavoritesIcon />
-                                    {favoriteCount > 0 && (
+                                    {!isGuestUser && favoriteCount > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                                             {favoriteCount > 99 ? '99+' : favoriteCount}
                                         </span>
@@ -470,6 +504,17 @@ function App({ user, onLogout }) {
                     onClose={handleFavoritesPageClose}
                 />
             )}
+
+            {/* Floating Comment Button */}
+            <FloatingCommentButton onClick={() => setIsCommentsModalOpen(true)} />
+
+            {/* Comments Modal */}
+            <CommentsModal
+                isOpen={isCommentsModalOpen}
+                onClose={() => setIsCommentsModalOpen(false)}
+                userName={currentUser?.name}
+                userEmail={currentUser?.email}
+            />
         </>
     );
 }
