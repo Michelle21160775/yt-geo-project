@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const favoritesRoutes = require('./routes/favorites');
 const historyRoutes = require('./routes/history');
+const commentsRoutes = require('./routes/comments');
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/comments', commentsRoutes);
 
 // Función auxiliar para realizar llamadas a la API de YouTube
 async function youtubeApiCall(endpoint, params) {

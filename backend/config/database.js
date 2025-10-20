@@ -41,6 +41,11 @@ const createIndexes = async () => {
         await db.collection('history').createIndex({ userId: 1, watchedAt: -1 });
         await db.collection('history').createIndex({ userId: 1, videoId: 1 });
 
+        // Comments collection indexes (app-level feedback)
+        await db.collection('comments').createIndex({ createdAt: -1 });
+        await db.collection('comments').createIndex({ userId: 1 });
+        await db.collection('comments').createIndex({ userId: 1, createdAt: -1 });
+
         console.log('Database indexes created');
     } catch (error) {
         console.error('Error creating indexes:', error);

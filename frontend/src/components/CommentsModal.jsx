@@ -1,21 +1,52 @@
 import React, { useState } from 'react';
+import { addComment } from '../utils/commentsAPI';
 import '../styles/comments.css';
 
 const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
     const [comment, setComment] = useState('');
     const [name, setName] = useState(userName || userEmail || '');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Aquí irá la lógica de envío después
-        console.log('Comentario enviado:', { name, comment });
-        
-        // Limpiar el formulario
-        setComment('');
-        
-        // Cerrar el modal
-        onClose();
+
+        // Validate inputs
+        if (!name.trim()) {
+            setError('Por favor, ingresa tu nombre');
+            return;
+        }
+
+        if (!comment.trim()) {
+            setError('Por favor, escribe un comentario');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            // Send app feedback comment to backend
+            const commentData = {
+                userName: name.trim(),
+                comment: comment.trim()
+            };
+
+            await addComment(commentData);
+
+            // Success - clear form and close modal
+            setComment('');
+            setError('');
+            onClose();
+
+            // Show success message (optional)
+            console.log('Comentario de feedback enviado exitosamente');
+        } catch (err) {
+            console.error('Error al enviar comentario:', err);
+            setError(err.message || 'Error al enviar el comentario. Por favor, intenta de nuevo.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -33,7 +64,7 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
-                        Enviar Comentario
+                        Enviar Feedback
                     </h2>
                     <button
                         onClick={onClose}
@@ -44,6 +75,13 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
                         </svg>
                     </button>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                        {error}
+                    </div>
+                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,11 +106,11 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
 
                     {/* Comment Textarea */}
                     <div>
-                        <label 
-                            htmlFor="comment" 
+                        <label
+                            htmlFor="comment"
                             className="block text-sm font-medium text-purple-200 mb-2"
                         >
-                            Comentario
+                            Feedback / Comentario
                         </label>
                         <textarea
                             id="comment"
@@ -81,7 +119,7 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
                             required
                             rows="5"
                             className="w-full px-4 py-3 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium resize-none"
-                            placeholder="Escribe tu comentario aquí..."
+                            placeholder="Comparte tu opinión, sugerencias o reporta problemas sobre la aplicación..."
                         />
                     </div>
 
@@ -96,9 +134,12 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
                         </button>
                         <button
                             type="submit"
-                            className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg"
+                            disabled={isSubmitting}
+                            className={`px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg ${
+                                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                         >
-                            Enviar
+                            {isSubmitting ? 'Enviando...' : 'Enviar'}
                         </button>
                     </div>
                 </form>

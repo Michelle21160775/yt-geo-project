@@ -9,6 +9,7 @@ import ProfilePage from './components/ProfilePage';
 import FavoritesPage from './components/FavoritesPage';
 import FloatingCommentButton from './components/FloatingCommentButton';
 import CommentsModal from './components/CommentsModal';
+import FeedbackPage from './components/FeedbackPage';
 import { useFavorites } from './hooks/useFavorites';
 import './styles/scrollbar.css';
 import { addToHistory } from './utils/historyAPI';
@@ -41,6 +42,12 @@ const FavoritesIcon = () => (
   </svg>
 );
 
+const FeedbackIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+  </svg>
+);
+
 function App({ user, onLogout }) {
     const [location, setLocation] = useState(null);
     const [query, setQuery] = useState('');
@@ -60,7 +67,8 @@ function App({ user, onLogout }) {
     const [currentUser, setCurrentUser] = useState(user);
     const [showFavoritesPage, setShowFavoritesPage] = useState(false);
     const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
-    
+    const [showFeedbackPage, setShowFeedbackPage] = useState(false);
+
     // Check if user is guest
     const isGuestUser = currentUser?.isGuest === true;
     
@@ -382,6 +390,16 @@ function App({ user, onLogout }) {
                                                 )}
                                                 <button
                                                     onClick={() => {
+                                                        setShowFeedbackPage(true);
+                                                        setIsProfileDropdownOpen(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                                                >
+                                                    <FeedbackIcon />
+                                                    Ver Feedback
+                                                </button>
+                                                <button
+                                                    onClick={() => {
                                                         setIsProfileDropdownOpen(false);
                                                         onLogout();
                                                     }}
@@ -502,6 +520,14 @@ function App({ user, onLogout }) {
                     user={currentUser}
                     onVideoClick={handleVideoClick}
                     onClose={handleFavoritesPageClose}
+                />
+            )}
+
+            {/* Feedback Page */}
+            {showFeedbackPage && (
+                <FeedbackPage
+                    currentUser={currentUser}
+                    onClose={() => setShowFeedbackPage(false)}
                 />
             )}
 

@@ -5,7 +5,7 @@ const FloatingCommentButton = ({ onClick }) => {
         <button
             onClick={onClick}
             className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 z-40 group"
-            aria-label="Abrir comentarios"
+            aria-label="Enviar feedback"
         >
             {/* Icon */}
             <svg 
@@ -24,7 +24,7 @@ const FloatingCommentButton = ({ onClick }) => {
             
             {/* Tooltip */}
             <span className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-[#1a1a24] text-purple-200 text-sm px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xl border border-purple-600/30">
-                Enviar comentario
+                Enviar feedback
             </span>
         </button>
     );
