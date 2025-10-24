@@ -24,7 +24,8 @@ const FeedbackPage = ({ onClose, currentUser }) => {
                 getCommentCount()
             ]);
 
-            setComments(commentsData);
+            // Reverse the order so newest comments appear first
+            setComments([...commentsData].reverse());
             setCommentCount(count);
         } catch (err) {
             console.error('Error loading comments:', err);
@@ -43,10 +44,10 @@ const FeedbackPage = ({ onClose, currentUser }) => {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-scroll to bottom when new comments arrive
+    // Auto-scroll to top when new comments arrive
     useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        if (chatContainerRef.current && comments.length > 0) {
+            chatContainerRef.current.scrollTop = 0;
         }
     }, [comments]);
 
@@ -107,8 +108,8 @@ const FeedbackPage = ({ onClose, currentUser }) => {
 
             const newComment = await addComment(commentData);
 
-            // Add the new comment to the list immediately (optimistic update)
-            setComments(prev => [...prev, {
+            // Add the new comment to the beginning of the list (newest first)
+            setComments(prev => [{
                 id: newComment.id,
                 userName: newComment.userName,
                 userEmail: newComment.userEmail,
@@ -116,7 +117,7 @@ const FeedbackPage = ({ onClose, currentUser }) => {
                 comment: newComment.comment,
                 createdAt: newComment.createdAt,
                 updatedAt: newComment.updatedAt
-            }]);
+            }, ...prev]);
 
             // Update comment count
             setCommentCount(prev => prev + 1);
@@ -124,10 +125,10 @@ const FeedbackPage = ({ onClose, currentUser }) => {
             // Clear input
             setNewMessage('');
 
-            // Scroll to bottom
+            // Scroll to top to show the new comment
             setTimeout(() => {
                 if (chatContainerRef.current) {
-                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                    chatContainerRef.current.scrollTop = 0;
                 }
             }, 100);
 

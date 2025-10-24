@@ -7,7 +7,11 @@ import Login from './Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
 
+
+export const API_URL = import.meta.env.VITE_API_URL;
+
 function OAuthCallback() {
+
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -1,5 +1,7 @@
+import { API_URL } from "../main";
+
 const FAVORITES_STORAGE_KEY = 'videoFinder_favorites';
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = `${API_URL}/api`;
 
 // Helper function to get auth token
 const getAuthToken = () => {

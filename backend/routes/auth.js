@@ -66,7 +66,7 @@ router.get('/google/callback',
     (req, res) => {
         const token = generateToken(req.user);
         const userData = encodeURIComponent(JSON.stringify({ id: req.user.id, email: req.user.email }));
-        res.redirect(`http://localhost:5173?token=${token}&user=${userData}`);
+        res.redirect(`${process.env.FRONTEND_URL}?token=${token}&user=${userData}`);
     }
 );
 

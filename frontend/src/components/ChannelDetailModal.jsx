@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import VideoCard from './VideoCard';
 import '../styles/scrollbar.css';
+import { API_URL } from '../main';
 
 const ChannelDetailModal = ({ 
   channel, 
@@ -26,7 +27,7 @@ const ChannelDetailModal = ({
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:3001/api/channel-videos', {
+      const response = await axios.post(`${API_URL}/api/channel-videos`, {
         channelId: channel.channel_id,
         lat: location.lat,
         lon: location.lon,

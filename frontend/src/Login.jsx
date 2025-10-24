@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { API_URL } from "./main";
 
 // --- Funciones de Iconos ---
 
@@ -292,7 +293,7 @@ function Login({ onLoginSuccess }) {
     try {
       // NOTA: Esta URL debe apuntar a tu backend de Node.js
       const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const response = await axios.post(`http://localhost:3001${endpoint}`, {
+      const response = await axios.post(`${API_URL}${endpoint}`, {
         email,
         password,
       });
@@ -317,7 +318,7 @@ function Login({ onLoginSuccess }) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3001/api/auth/google";
+    window.location.href = `${API_URL}/api/auth/google`;
   };
 
   const handleGuestLogin = () => {

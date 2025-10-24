@@ -13,6 +13,8 @@ import FeedbackPage from './components/FeedbackPage';
 import { useFavorites } from './hooks/useFavorites';
 import './styles/scrollbar.css';
 import { addToHistory } from './utils/historyAPI';
+import { API_URL } from './main';
+
 
 const LogoutIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -131,7 +133,7 @@ function App({ user, onLogout }) {
         setResults(null);
 
         try {
-            const response = await axios.post('http://localhost:3001/api/search', {
+            const response = await axios.post(`${API_URL}/api/search`, {
                 query,
                 lat: location.lat,
                 lon: location.lon,

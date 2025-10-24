@@ -293,7 +293,7 @@ app.post('/api/channel-videos', async (req, res) => {
     }
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Initialize database and start server
 const startServer = async () => {
