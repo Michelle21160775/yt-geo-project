@@ -133,7 +133,7 @@ function App({ user, onLogout }) {
         setResults(null);
 
         try {
-            const response = await axios.post(`${API_URL}/api/search`, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/search`, {
                 query,
                 lat: location.lat,
                 lon: location.lon,

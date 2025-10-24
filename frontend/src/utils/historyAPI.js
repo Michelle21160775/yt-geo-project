@@ -1,11 +1,9 @@
 // Utilities for managing watch history with MongoDB backend integration
 
-import { API_URL } from "../main";
-
 const HISTORY_STORAGE_KEY = 'videoFinder_history';
 const USE_LOCAL_STORAGE = false; // Using backend MongoDB API
 const MAX_HISTORY_ITEMS = 100; // Limit history to prevent localStorage overflow
-const API_BASE_URL = `${API_URL}/api`;
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 // Helper function to get auth token
 const getAuthToken = () => {
