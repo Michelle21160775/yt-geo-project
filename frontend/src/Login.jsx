@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { API_URL } from "./main";
+
+// Base URL for backend API. If VITE_API_URL is not set, fallback to localhost:3001
+const BASE_API = import.meta?.env?.VITE_API_URL || 'http://localhost:3001';
 
 // --- Funciones de Iconos ---
 
@@ -293,7 +295,7 @@ function Login({ onLoginSuccess }) {
     try {
       // NOTA: Esta URL debe apuntar a tu backend de Node.js
       const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+      const response = await axios.post(`${BASE_API}${endpoint}`, {
         email,
         password,
       });
@@ -318,7 +320,7 @@ function Login({ onLoginSuccess }) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
+  window.location.href = `${BASE_API}/api/auth/google`;
   };
 
   const handleGuestLogin = () => {

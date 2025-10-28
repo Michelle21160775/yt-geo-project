@@ -3,7 +3,8 @@
 const HISTORY_STORAGE_KEY = 'videoFinder_history';
 const USE_LOCAL_STORAGE = false; // Using backend MongoDB API
 const MAX_HISTORY_ITEMS = 100; // Limit history to prevent localStorage overflow
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+// Use VITE_API_URL if provided, otherwise fallback to localhost:3001
+const API_BASE_URL = (import.meta?.env?.VITE_API_URL || 'http://localhost:3001') + '/api';
 
 // Helper function to get auth token
 const getAuthToken = () => {
