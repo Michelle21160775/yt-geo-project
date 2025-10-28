@@ -159,7 +159,7 @@ app.post('/api/search', async (req, res) => {
         // 1. Búsqueda inicial
         const searchData = await youtubeApiCall('search', {
             part: 'snippet',
-            q: encodedQuery,
+            q: query,
             type: 'video',
             location: `${lat},${lon}`,
             locationRadius: radius,
