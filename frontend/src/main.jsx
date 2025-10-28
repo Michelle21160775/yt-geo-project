@@ -8,7 +8,11 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 
+
+export const API_URL = import.meta.env.VITE_API_URL;
+
 function OAuthCallback() {
+
   const navigate = useNavigate();
 
   useEffect(() => {
