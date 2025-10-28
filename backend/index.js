@@ -152,7 +152,7 @@ app.post('/api/search', async (req, res) => {
         return res.status(400).json({ error: 'Faltan parámetros de búsqueda.' });
     }
 
-    const encodedQuery = encodeURIComponent(query);
+    // const encodedQuery = encodeURIComponent(query);
     const radius = req.body.radius || '10km';
 
     try {
