@@ -4,7 +4,10 @@ import '../styles/comments.css';
 
 const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
     const [comment, setComment] = useState('');
-    const [name, setName] = useState(userName || userEmail || '');
+    // Nuevo campo obligatorio: nombre completo
+    const [fullName, setFullName] = useState(userName || '');
+    // Campo correo (antes "Nombre / Identificación")
+    const [email, setEmail] = useState(userEmail || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -12,8 +15,19 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
         e.preventDefault();
 
         // Validate inputs
-        if (!name.trim()) {
-            setError('Por favor, ingresa tu nombre');
+        if (!fullName.trim()) {
+            setError('Por favor, ingresa tu nombre completo');
+            return;
+        }
+
+        if (!email.trim()) {
+            setError('Por favor, ingresa tu correo');
+            return;
+        }
+
+        // Basic email format check
+        if (!/\S+@\S+\.\S+/.test(email.trim())) {
+            setError('Por favor, ingresa un correo válido');
             return;
         }
 
@@ -28,7 +42,8 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
         try {
             // Send app feedback comment to backend
             const commentData = {
-                userName: name.trim(),
+                userName: fullName.trim(),
+                email: email.trim(),
                 comment: comment.trim()
             };
 
@@ -85,22 +100,38 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Name Input */}
+                    {/* Full Name and Email Inputs */}
                     <div>
-                        <label 
-                            htmlFor="name" 
+                        <label
+                            htmlFor="fullName"
                             className="block text-sm font-medium text-purple-200 mb-2"
                         >
-                            Nombre / Identificación
+                            Nombre completo
                         </label>
                         <input
                             type="text"
-                            id="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            id="fullName"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
                             required
                             className="w-full px-4 py-3 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium"
-                            placeholder="Tu nombre o identificación"
+                            placeholder="Tu nombre completo"
+                        />
+
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-purple-200 mb-2 mt-4"
+                        >
+                            Correo electrónico
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            readOnly
+                            required
+                            className="w-full px-4 py-3 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium opacity-70 cursor-not-allowed"
+                            placeholder={email || 'tu@ejemplo.com'}
                         />
                     </div>
 
