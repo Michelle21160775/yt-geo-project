@@ -6,6 +6,7 @@ import App from './App.jsx'
 import Login from './Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
+import { AuthProvider } from './contexts/AuthContext.jsx'
 
 function OAuthCallback() {
   const navigate = useNavigate();
@@ -70,19 +71,21 @@ function LoginWrapper() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={
-          <PublicRoute>
-            <LoginWrapper />
-          </PublicRoute>
-        } />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <AppWrapper />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={
+            <PublicRoute>
+              <LoginWrapper />
+            </PublicRoute>
+          } />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <AppWrapper />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )

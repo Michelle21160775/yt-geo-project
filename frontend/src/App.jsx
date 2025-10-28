@@ -289,12 +289,14 @@ function App({ user, onLogout }) {
     };
 
     const handleProfileUpdate = (updatedProfile) => {
+        // La actualización del perfil ahora se maneja directamente en ProfilePage
+        // a través del AuthContext, pero mantenemos esta función para 
+        // sincronizar el estado local si es necesario
         setCurrentUser(prev => ({
             ...prev,
             ...updatedProfile
         }));
         console.log('Profile updated:', updatedProfile);
-        // Aquí puedes agregar la lógica para sincronizar con el backend
     };
 
     const handleFavoritesClick = () => {

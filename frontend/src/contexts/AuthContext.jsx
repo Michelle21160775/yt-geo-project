@@ -30,11 +30,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
     };
 
+    const updateProfile = (userData) => {
+        const updatedUser = { ...user, ...userData };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
     const value = {
         user,
         isGuest,
         login,
         logout,
+        updateProfile,
         isAuthenticated: !!user
     };
 

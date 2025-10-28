@@ -1,7 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { getUserProfile, updateUserProfile, updateUserPassword } from '../services/profileAPI';
 import '../styles/profile.css';
 
 const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
+    const { updateProfile } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
@@ -20,6 +23,38 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState('');
     const fileInputRef = useRef(null);
+
+    // Fetch latest profile when modal mounts
+    React.useEffect(() => {
+        let mounted = true;
+        const loadProfile = async () => {
+            setLoading(true);
+            setErrors({});
+            try {
+                const data = await getUserProfile();
+                if (!mounted) return;
+                setProfileData({
+                    name: data.name || '',
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    bio: data.bio || '',
+                    location: data.location || '',
+                    profileImage: data.profileImage || null
+                });
+
+                // Sync with auth context so rest of app has latest user
+                updateProfile && updateProfile(data);
+            } catch (err) {
+                console.error('Error loading profile:', err);
+                setErrors(prev => ({ ...prev, general: err?.error || 'Error al cargar el perfil' }));
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        loadProfile();
+        return () => { mounted = false; };
+    }, []);
 
     // Iconos SVG
     const UserIcon = () => (
@@ -175,18 +210,33 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         if (!validateProfileForm()) return;
 
         setLoading(true);
+        setErrors({});
         try {
-            // Simular llamada a API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Llamada real a la API
+            const updatedUser = await updateUserProfile({
+                name: profileData.name,
+                email: profileData.email,
+                phone: profileData.phone,
+                bio: profileData.bio,
+                location: profileData.location,
+                profileImage: profileData.profileImage
+            });
             
-            // Aquí iría la llamada real a la API
-            // await updateUserProfile(profileData);
+            // Actualizar contexto de autenticación
+            updateProfile(updatedUser);
             
-            onUpdateProfile && onUpdateProfile(profileData);
+            // Notificar al componente padre si existe el callback
+            if (onUpdateProfile) {
+                onUpdateProfile(updatedUser);
+            }
+            
             setSuccess('Perfil actualizado correctamente');
             setTimeout(() => setSuccess(''), 3000);
         } catch (error) {
-            setErrors({ general: 'Error al actualizar el perfil. Intenta de nuevo.' });
+            console.error('Error al actualizar perfil:', error);
+            setErrors({ 
+                general: error.error || 'Error al actualizar el perfil. Intenta de nuevo.' 
+            });
         } finally {
             setLoading(false);
         }
@@ -198,12 +248,13 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         if (!validatePasswordForm()) return;
 
         setLoading(true);
+        setErrors({});
         try {
-            // Simular llamada a API
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Aquí iría la llamada real a la API
-            // await updateUserPassword(passwordData);
+            // Llamada real a la API
+            await updateUserPassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
             
             setSuccess('Contraseña actualizada correctamente');
             setPasswordData({
@@ -213,7 +264,10 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
             });
             setTimeout(() => setSuccess(''), 3000);
         } catch (error) {
-            setErrors({ password: 'Error al actualizar la contraseña. Verifica que la contraseña actual sea correcta.' });
+            console.error('Error al actualizar contraseña:', error);
+            setErrors({ 
+                password: error.error || 'Error al actualizar la contraseña. Verifica que la contraseña actual sea correcta.' 
+            });
         } finally {
             setLoading(false);
         }
@@ -448,6 +502,27 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                     {activeTab === 'password' && (
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
                             <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Contraseña actual *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="currentPassword"
+                                        value={passwordData.currentPassword}
+                                        onChange={handlePasswordInputChange}
+                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                            errors.currentPassword
+                                                ? 'border-red-500 focus:ring-red-400'
+                                                : 'border-white/10 focus:ring-purple-400'
+                                        }`}
+                                        placeholder="Tu contraseña actual"
+                                    />
+                                    {errors.currentPassword && (
+                                        <p className="text-red-400 text-sm mt-1">{errors.currentPassword}</p>
+                                    )}
+                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Nueva contraseña *
