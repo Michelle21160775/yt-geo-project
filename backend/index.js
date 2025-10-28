@@ -152,14 +152,14 @@ app.post('/api/search', async (req, res) => {
         return res.status(400).json({ error: 'Faltan parámetros de búsqueda.' });
     }
 
-    const encodedQuery = encodeURIComponent(query);
+    // const encodedQuery = encodeURIComponent(query);
     const radius = req.body.radius || '10km';
 
     try {
         // 1. Búsqueda inicial
         const searchData = await youtubeApiCall('search', {
             part: 'snippet',
-            q: encodedQuery,
+            q: query,
             type: 'video',
             location: `${lat},${lon}`,
             locationRadius: radius,

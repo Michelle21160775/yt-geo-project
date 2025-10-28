@@ -52,26 +52,16 @@ router.put('/', authenticate, async (req, res) => {
     }
 });
 
-// Update password
+// Update password (no se requiere la contraseña actual)
 router.put('/password', authenticate, async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { newPassword } = req.body;
 
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'Current and new password are required' });
+        if (!newPassword) {
+            return res.status(400).json({ error: 'New password is required' });
         }
 
-        // Verify current password
-        if (req.user.password) {
-            const isValidPassword = await bcrypt.compare(currentPassword, req.user.password);
-            if (!isValidPassword) {
-                return res.status(401).json({ error: 'Current password is incorrect' });
-            }
-        } else {
-            return res.status(400).json({ error: 'Cannot change password for OAuth users' });
-        }
-
-        // Hash new password
+        // Hash new password and update regardless of whether the user had a previous password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await updateUserPassword(req.userId, hashedPassword);
 

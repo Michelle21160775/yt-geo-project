@@ -6,6 +6,7 @@ import App from './App.jsx'
 import Login from './Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
+import { AuthProvider } from './contexts/AuthContext.jsx'
 
 
 export const API_URL = import.meta.env.VITE_API_URL;
@@ -74,19 +75,21 @@ function LoginWrapper() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={
-          <PublicRoute>
-            <LoginWrapper />
-          </PublicRoute>
-        } />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <AppWrapper />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={
+            <PublicRoute>
+              <LoginWrapper />
+            </PublicRoute>
+          } />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <AppWrapper />
+            </ProtectedRoute>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )

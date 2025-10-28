@@ -279,18 +279,6 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
                 {/* Controls */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10">
                     <div className="flex items-center gap-4">
-                        <label className="text-sm text-gray-300">Ordenar por:</label>
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-                        >
-                            <option value="dateAdded">
-                                {activeTab === 'favorites' ? 'Fecha agregado' : 'Visto recientemente'}
-                            </option>
-                            <option value="title">Título</option>
-                            <option value="channel">Canal</option>
-                        </select>
                         {activeTab === 'history' && history.length > 0 && (
                             <button
                                 onClick={clearAllHistoryItems}

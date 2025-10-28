@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+// Base API (use VITE_API_URL if set, fallback to localhost:3001)
+const BASE_API = import.meta?.env?.VITE_API_URL || 'http://localhost:3001';
 import VideoCard from './VideoCard';
 import '../styles/scrollbar.css';
  
@@ -26,7 +28,7 @@ const ChannelDetailModal = ({
     setError('');
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/channel-videos`, {
+      const response = await axios.post(`${BASE_API}/api/channel-videos`, {
         channelId: channel.channel_id,
         lat: location.lat,
         lon: location.lon,

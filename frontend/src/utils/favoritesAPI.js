@@ -1,6 +1,7 @@
  
 const FAVORITES_STORAGE_KEY = 'videoFinder_favorites';
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+// Use VITE_API_URL if provided, otherwise fallback to localhost:3001
+const API_BASE_URL = (import.meta?.env?.VITE_API_URL || 'http://localhost:3001') + '/api';
 
 // Helper function to get auth token
 const getAuthToken = () => {
