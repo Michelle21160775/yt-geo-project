@@ -18,6 +18,10 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         newPassword: '',
         confirmPassword: ''
     });
+    const [showPassword, setShowPassword] = useState({
+        newPassword: false,
+        confirmPassword: false
+    });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState('');
@@ -90,6 +94,27 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
             <polyline points="20,6 9,17 4,12"></polyline>
         </svg>
     );
+
+    const EyeIcon = () => (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    );
+
+    const EyeOffIcon = () => (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+    );
+
+    const togglePasswordVisibility = (field) => {
+        setShowPassword(prev => ({
+            ...prev,
+            [field]: !prev[field]
+        }));
+    };
 
     const handleProfileInputChange = (e) => {
         const { name, value } = e.target;
@@ -338,7 +363,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                     {/* Profile Tab */}
                     {activeTab === 'profile' && (
                         <form onSubmit={handleProfileSubmit} className="space-y-6">
-                            {/* Profile Image */}
+                            {/* Profile Image (disabled):
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="relative profile-image-container">
                                     <div className="w-24 h-24 rounded-full overflow-hidden bg-purple-600 flex items-center justify-center">
@@ -379,6 +404,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     Haz clic en el botón para cambiar tu foto de perfil
                                 </p>
                             </div>
+                            */}
 
                             {/* Form Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 profile-form-grid">
@@ -468,7 +494,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     name="bio"
                                     value={profileData.bio}
                                     onChange={handleProfileInputChange}
-                                    rows={4}
+                                    rows={2}
                                     className="w-full px-4 py-3 text-white border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors resize-none profile-input"
                                     placeholder="Cuéntanos un poco sobre ti..."
                                 />
@@ -499,18 +525,28 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Nueva contraseña *
                                     </label>
-                                    <input
-                                        type="password"
-                                        name="newPassword"
-                                        value={passwordData.newPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.newPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Tu nueva contraseña"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword.newPassword ? "text" : "password"}
+                                            name="newPassword"
+                                            value={passwordData.newPassword}
+                                            onChange={handlePasswordInputChange}
+                                            className={`w-full px-4 py-3 pr-12 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                                errors.newPassword
+                                                    ? 'border-red-500 focus:ring-red-400'
+                                                    : 'border-white/10 focus:ring-purple-400'
+                                            }`}
+                                            placeholder="Tu nueva contraseña"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => togglePasswordVisibility('newPassword')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                                            title={showPassword.newPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                        >
+                                            {showPassword.newPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                        </button>
+                                    </div>
                                     {errors.newPassword && (
                                         <p className="text-red-400 text-sm mt-1">{errors.newPassword}</p>
                                     )}
@@ -523,18 +559,28 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Confirmar nueva contraseña *
                                     </label>
-                                    <input
-                                        type="password"
-                                        name="confirmPassword"
-                                        value={passwordData.confirmPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.confirmPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Confirma tu nueva contraseña"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword.confirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            value={passwordData.confirmPassword}
+                                            onChange={handlePasswordInputChange}
+                                            className={`w-full px-4 py-3 pr-12 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
+                                                errors.confirmPassword
+                                                    ? 'border-red-500 focus:ring-red-400'
+                                                    : 'border-white/10 focus:ring-purple-400'
+                                            }`}
+                                            placeholder="Confirma tu nueva contraseña"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => togglePasswordVisibility('confirmPassword')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                                            title={showPassword.confirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                        >
+                                            {showPassword.confirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                        </button>
+                                    </div>
                                     {errors.confirmPassword && (
                                         <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
                                     )}
