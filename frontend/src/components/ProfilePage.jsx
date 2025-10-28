@@ -15,7 +15,6 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         profileImage: user?.profileImage || null
     });
     const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
@@ -184,10 +183,6 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
     const validatePasswordForm = () => {
         const newErrors = {};
 
-        if (!passwordData.currentPassword) {
-            newErrors.currentPassword = 'La contraseña actual es requerida';
-        }
-
         if (!passwordData.newPassword) {
             newErrors.newPassword = 'La nueva contraseña es requerida';
         } else if (passwordData.newPassword.length < 8) {
@@ -250,15 +245,13 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         setLoading(true);
         setErrors({});
         try {
-            // Llamada real a la API
+            // Llamada real a la API (solo enviamos la nueva contraseña)
             await updateUserPassword({
-                currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
-            
+
             setSuccess('Contraseña actualizada correctamente');
             setPasswordData({
-                currentPassword: '',
                 newPassword: '',
                 confirmPassword: ''
             });
@@ -266,7 +259,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         } catch (error) {
             console.error('Error al actualizar contraseña:', error);
             setErrors({ 
-                password: error.error || 'Error al actualizar la contraseña. Verifica que la contraseña actual sea correcta.' 
+                password: error.error || 'Error al actualizar la contraseña. Verifica que la nueva contraseña cumpla los requisitos.' 
             });
         } finally {
             setLoading(false);
@@ -502,27 +495,6 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                     {activeTab === 'password' && (
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
                             <div className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Contraseña actual *
-                                    </label>
-                                    <input
-                                        type="password"
-                                        name="currentPassword"
-                                        value={passwordData.currentPassword}
-                                        onChange={handlePasswordInputChange}
-                                        className={`w-full px-4 py-3 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
-                                            errors.currentPassword
-                                                ? 'border-red-500 focus:ring-red-400'
-                                                : 'border-white/10 focus:ring-purple-400'
-                                        }`}
-                                        placeholder="Tu contraseña actual"
-                                    />
-                                    {errors.currentPassword && (
-                                        <p className="text-red-400 text-sm mt-1">{errors.currentPassword}</p>
-                                    )}
-                                </div>
-
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Nueva contraseña *
