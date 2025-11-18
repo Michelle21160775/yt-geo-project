@@ -349,74 +349,91 @@ const FeedbackPage = ({ onClose, currentUser }) => {
                 )}
 
                 {/* Chat input form */}
-                <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
-                    {/* User avatar */}
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-full ${getAvatarColor(fullName || currentUser?.name || currentUser?.email || 'Anónimo')} flex items-center justify-center text-white font-bold text-sm`}>
-                        {getInitials(fullName || currentUser?.name || currentUser?.email || 'Anónimo')}
-                    </div>
+                <form onSubmit={handleSendMessage} className="space-y-3">
+                    {/* User info section - Nombre y Correo */}
+                    <div className="flex items-start space-x-3">
+                        {/* User avatar */}
+                        <div className={`hidden sm:flex flex-shrink-0 w-10 h-10 rounded-full ${getAvatarColor(fullName || currentUser?.name || currentUser?.email || 'Anónimo')} items-center justify-center text-white font-bold text-sm`}>
+                            {getInitials(fullName || currentUser?.name || currentUser?.email || 'Anónimo')}
+                        </div>
 
-                    {/* Nombre completo (obligatorio) y correo (no editable) */}
-                    <div className="w-56 mr-3">
-                        <label htmlFor="senderName" className="block text-xs text-purple-200/60 mb-1">Nombre completo</label>
-                        <input
-                            id="senderName"
-                            type="text"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            required
-                            placeholder="Tu nombre completo"
-                            className="w-full px-3 py-2 bg-[#0e0e1a] text-purple-100 placeholder-purple-200/40 rounded-lg border border-purple-600/30 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 transition-all"
-                        />
+                        {/* Nombre completo y correo - responsive grid */}
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Nombre completo */}
+                            <div>
+                                <label htmlFor="senderName" className="block text-xs text-purple-200/60 mb-1">
+                                    Nombre completo
+                                </label>
+                                <input
+                                    id="senderName"
+                                    type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    required
+                                    placeholder="Tu nombre completo"
+                                    className="w-full px-3 py-2 bg-[#0e0e1a] text-purple-100 placeholder-purple-200/40 rounded-lg border border-purple-600/30 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 transition-all text-sm"
+                                />
+                            </div>
 
-                        <label htmlFor="senderEmail" className="block text-xs text-purple-200/60 mb-1 mt-3">Correo electrónico</label>
-                        <input
-                            id="senderEmail"
-                            type="email"
-                            value={currentUser?.email || ''}
-                            readOnly
-                            className="w-full px-3 py-2 bg-[#0e0e1a] text-purple-200 placeholder-purple-400 rounded-lg border border-purple-600/20 focus:outline-none opacity-70 cursor-not-allowed"
-                        />
-                    </div>
-                    {/* Message input */}
-                    <div className="flex-1">
-                        <textarea
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Escribe tu feedback aquí... (Enter para enviar, Shift+Enter para nueva línea)"
-                            disabled={isSending}
-                            rows="2"
-                            className="w-full px-4 py-3 bg-[#0e0e1a] text-purple-100 placeholder-purple-200/40 rounded-lg border border-purple-600/30 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            style={{ maxHeight: '120px' }}
-                        />
-                        <div className="flex items-center justify-between mt-2 px-1">
-                            <span className="text-xs text-purple-200/40">
-                                {newMessage.length}/1000
-                            </span>
-                            <span className="text-xs text-purple-200/40">
-                                💡 Enter para enviar • Shift+Enter para nueva línea
-                            </span>
+                            {/* Correo electrónico */}
+                            <div>
+                                <label htmlFor="senderEmail" className="block text-xs text-purple-200/60 mb-1">
+                                    Correo electrónico
+                                </label>
+                                <input
+                                    id="senderEmail"
+                                    type="email"
+                                    value={currentUser?.email || ''}
+                                    readOnly
+                                    className="w-full px-3 py-2 bg-[#0e0e1a] text-purple-200 rounded-lg border border-purple-600/20 focus:outline-none opacity-70 cursor-not-allowed text-sm"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Send button */}
-                    <button
-                        type="submit"
-                        disabled={isSending || !newMessage.trim()}
-                        className="flex-shrink-0 p-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none"
-                        title="Enviar mensaje"
-                    >
-                        {isSending ? (
-                            <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                        )}
-                    </button>
+                    {/* Message input section */}
+                    <div className="flex items-end space-x-3">
+                        {/* Message textarea */}
+                        <div className="flex-1">
+                            <textarea
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Escribe tu feedback aquí..."
+                                disabled={isSending}
+                                rows="2"
+                                className="w-full px-4 py-3 bg-[#0e0e1a] text-purple-100 placeholder-purple-200/40 rounded-lg border border-purple-600/30 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                                style={{ maxHeight: '120px' }}
+                            />
+                            <div className="flex items-center justify-between mt-2 px-1">
+                                <span className="text-xs text-purple-200/40">
+                                    {newMessage.length}/1000
+                                </span>
+                                <span className="hidden sm:inline text-xs text-purple-200/40">
+                                    💡 Enter para enviar • Shift+Enter para nueva línea
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Send button */}
+                        <button
+                            type="submit"
+                            disabled={isSending || !newMessage.trim()}
+                            className="flex-shrink-0 p-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none"
+                            title="Enviar mensaje"
+                        >
+                            {isSending ? (
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </form>
             </div>
 
