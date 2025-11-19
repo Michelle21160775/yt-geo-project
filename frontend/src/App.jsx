@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import * as Sentry from "@sentry/react";
+import { logHttpRequest, logHttpSuccess, logHttpError } from './utils/httpLogger';
 import SearchControls from './components/SearchControls';
 import ResultsDisplay from './components/ResultsDisplay';
 import FloatingPlayer from './components/FloatingPlayer';
@@ -75,9 +77,42 @@ function App({ user, onLogout }) {
     // Check if user is guest
     const isGuestUser = currentUser?.isGuest === true;
 
+    // Test Sentry logging and error tracking
+    const testSentryError = () => {
+        // Send test logs using Sentry.logger (as per documentation)
+        Sentry.logger.info('User triggered test log', { 
+            log_source: 'sentry_test',
+            timestamp: new Date().toISOString(),
+            user: currentUser?.email || 'guest'
+        });
+        
+        // Also test console logs (captured by consoleIntegration)
+        console.log("🧪 Testing Sentry - Log message");
+        console.warn("⚠️ Testing Sentry - Warning message");
+        console.error("❌ Testing Sentry - Error message");
+        
+        // Capture a manual message
+        Sentry.captureMessage("Test message from Video Finder app", "info");
+        
+        // Throw an error to test error tracking
+        throw new Error("🔥 Test error for Sentry - This is intentional!");
+    };
+
     const addVideoToHistory = async (videoInfo) => {
         if (!currentUser || isGuestUser) return; // Don't save history for guests
-        await addToHistory(currentUser.id, videoInfo)
+        
+        // Validate that we have the minimum required data
+        if (!videoInfo || !videoInfo.videoId) {
+            console.warn('Cannot add to history: missing video data');
+            return;
+        }
+        
+        try {
+            await addToHistory(currentUser.id, videoInfo);
+        } catch (error) {
+            console.error('Failed to add video to history:', error);
+            // Continue execution - don't disrupt user experience
+        }
     }
 
     // Favorites hook
@@ -133,18 +168,38 @@ function App({ user, onLogout }) {
         setError('');
         setResults(null);
 
+        const endpoint = `${BASE_API}/api/search`;
+        const startTime = Date.now();
+        const requestData = {
+            query,
+            lat: location.lat,
+            lon: location.lon,
+            radius: radius,
+            regionCode: 'MX'
+        };
+
+        // Log request start
+        logHttpRequest('POST', endpoint, requestData);
+
         try {
-            const response = await axios.post(`${BASE_API}/api/search`, {
-                query,
-                lat: location.lat,
-                lon: location.lon,
-                radius: radius,
-                regionCode: 'MX'
+            const response = await axios.post(endpoint, requestData);
+            const duration = Date.now() - startTime;
+
+            // Log successful response
+            logHttpSuccess('POST', endpoint, response.status, duration, {
+                videosCount: response.data.results?.other_videos?.length || 0,
+                channelsCount: response.data.results?.related_channels?.length || 0,
+                query: query
             });
 
             setResults(response.data.results);
             console.log('Search results:', response.data);
         } catch (err) {
+            const duration = Date.now() - startTime;
+            
+            // Log error with details
+            logHttpError('POST', endpoint, err, duration);
+            
             setError('Hubo un error al buscar. Intenta de nuevo más tarde.');
             console.error('Search error:', err);
         } finally {
@@ -190,10 +245,18 @@ function App({ user, onLogout }) {
         setShowWatchPage(true);
     };
 
-    const handleVideoSelectFromWatch = (videoId, videoInfo) => {
+    const handleVideoSelectFromWatch = async (videoId, videoInfo) => {
         // Switch to new video in watch page
         setCurrentVideoId(videoId);
         setCurrentVideoInfo(videoInfo);
+
+        // Add to history with proper videoId
+        const videoInfoWithId = {
+            ...videoInfo,
+            videoId: videoId,
+            video_id: videoId
+        };
+        await addVideoToHistory(videoInfoWithId);
 
         // Update recommended videos
         if (results) {

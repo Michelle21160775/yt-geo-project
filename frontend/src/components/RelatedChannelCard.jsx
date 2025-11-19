@@ -71,17 +71,22 @@ const RelatedChannelCard = ({ channel, onChannelClick, onVideoClick }) => {
         {channel.videos
           .filter(video => video && video.video_id && video.title)
           .slice(0, 3)
-          .map((video) => (
+          .map((video, index) => (
           <div
-            key={video.video_id}
+            key={`${video.video_id}-${channel.channel_id || channel.name}-${index}`}
             className="flex gap-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors group"
             onClick={() => onVideoClick(video.video_id, {
+              videoId: video.video_id,
               title: video.title,
-              channel: channel.name,
+              channel: channel.channel_title || channel.name,
+              channel_title: channel.channel_title || channel.name,
               views: video.view_count,
+              view_count: video.view_count,
               publishedAt: video.published_at,
+              published_at: video.published_at,
               duration: video.duration,
               thumbnail: video.thumbnail_url,
+              thumbnail_url: video.thumbnail_url,
               description: video.description || ''
             })}
           >

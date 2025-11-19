@@ -273,7 +273,7 @@ const WatchPage = ({
                 )}
                 
                 {/* Custom CSS for heart animations */}
-                <style jsx>{`
+                <style>{`
                   @keyframes floatHeartMain {
                     0% {
                       transform: scale(0) translateY(0px) rotate(0deg);
