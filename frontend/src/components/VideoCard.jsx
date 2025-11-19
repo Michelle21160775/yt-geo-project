@@ -43,12 +43,17 @@ const VideoCard = ({ video, onVideoClick }) => {
     <div 
       className="bg-transparent hover:bg-white/5 rounded-lg transition-all group cursor-pointer p-2"
       onClick={() => onVideoClick(video.video_id, {
+        videoId: video.video_id,
         title: video.title,
-        channel: video.channel_name,
+        channel: video.channel_title || video.channel_name,
+        channel_title: video.channel_title,
         views: video.view_count,
+        view_count: video.view_count,
         publishedAt: video.published_at,
+        published_at: video.published_at,
         duration: video.duration,
         thumbnail: video.thumbnail_url,
+        thumbnail_url: video.thumbnail_url,
         description: video.description || ''
       })}
     >

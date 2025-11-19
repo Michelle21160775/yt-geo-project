@@ -33,7 +33,14 @@ const addToHistory = async (userId, videoData) => {
             },
             { returnDocument: 'after' }
         );
-        return result.value;
+        
+        // Return the updated document properly
+        const updatedDoc = result.value || result;
+        return {
+            _id: updatedDoc._id || existing._id,
+            id: (updatedDoc._id || existing._id).toString(),
+            ...updatedDoc
+        };
     }
 
     // Create new history entry
@@ -43,7 +50,7 @@ const addToHistory = async (userId, videoData) => {
         title: videoData.title,
         thumbnail: videoData.thumbnail,
         channel: videoData.channel,
-        channelThumbnail: videoData.channelThumbnail || 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',
+        channelThumbnail: videoData.channelThumbnail || 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',    
         duration: videoData.duration || '0:00',
         views: videoData.views || '0 views',
         publishedTime: videoData.publishedTime || 'Unknown',
@@ -54,8 +61,8 @@ const addToHistory = async (userId, videoData) => {
 
     const result = await db.collection(COLLECTION_NAME).insertOne(historyEntry);
     return {
-        id: result.insertedId.toString(),
         _id: result.insertedId,
+        id: result.insertedId.toString(),
         ...historyEntry
     };
 };
@@ -91,7 +98,7 @@ const updateWatchProgress = async (userId, videoId, progress) => {
         },
         { returnDocument: 'after' }
     );
-    return result.value;
+    return result.value || result;
 };
 
 module.exports = {

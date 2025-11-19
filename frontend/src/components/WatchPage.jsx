@@ -228,12 +228,12 @@ const WatchPage = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Left Section - Video Player and Info in same scrollable container */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="w-full max-w-4xl mx-auto p-6">
+            <div className="w-full max-w-4xl mx-auto lg:p-6 p-0">
               {/* Video Player Container */}
-              <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-2xl mb-6 relative">
+              <div className="aspect-video bg-black lg:rounded-lg overflow-hidden shadow-2xl lg:mb-6 mb-4 relative">
                 <div ref={playerRef} className="w-full h-full"></div>
                 
                 {/* Heart Animation Overlay */}
@@ -273,7 +273,7 @@ const WatchPage = ({
                 )}
                 
                 {/* Custom CSS for heart animations */}
-                <style jsx>{`
+                <style>{`
                   @keyframes floatHeartMain {
                     0% {
                       transform: scale(0) translateY(0px) rotate(0deg);
@@ -315,10 +315,10 @@ const WatchPage = ({
               </div>
 
               {/* Video Info and Controls */}
-              <div className="bg-[#1a1a24] rounded-lg p-4 border border-white/10">
-                {/* Video Title and Action Buttons in same row */}
-                <div className="flex items-center gap-4 mb-3">
-                  <h2 className="flex-1 text-xl font-bold text-white truncate">
+              <div className="bg-[#1a1a24] lg:rounded-lg p-4 border-t lg:border border-white/10">
+                {/* Video Title and Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-3">
+                  <h2 className="flex-1 text-lg sm:text-xl font-bold text-white line-clamp-2">
                     {videoInfo?.title || "Cargando..."}
                   </h2>
 
@@ -366,29 +366,100 @@ const WatchPage = ({
                 </div>
 
                 {/* Channel and Stats */}
-                <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400">
                   <span className="font-medium">
                     {videoInfo?.channel || "Canal"}
                   </span>
                   {videoInfo?.views && (
                     <>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <span>{formatViewCount(videoInfo.views)} vistas</span>
                     </>
                   )}
                   {videoInfo?.publishedAt && (
                     <>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <span>{formatPublishedAt(videoInfo.publishedAt)}</span>
                     </>
+                  )}
+                </div>
+              </div>
+
+              {/* Recommended Videos - Mobile Version (below video info) */}
+              <div className="lg:hidden px-4 pb-4">
+                <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2 mt-4">
+                  <svg
+                    className="w-5 h-5 text-purple-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                  </svg>
+                  Videos Relacionados
+                </h3>
+
+                <div className="space-y-3">
+                  {recommendedVideos
+                    .filter((video) => video && video.video_id && video.title)
+                    .map((video) => (
+                      <div
+                        key={video.video_id}
+                        className="flex gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer transition-colors group"
+                        onClick={() => onVideoSelect(video.video_id, video)}
+                      >
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={video.thumbnail_url}
+                            alt={video.title}
+                            className="w-40 h-24 object-cover rounded-lg"
+                          />
+                          {video.duration && (
+                            <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
+                              {formatDuration(video.duration)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-white line-clamp-2 group-hover:text-purple-300 transition-colors">
+                            {video.title}
+                          </h4>
+                          <p className="text-xs text-gray-400 mt-1 truncate">
+                            {video.channel_title}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                            {video.view_count && (
+                              <>
+                                <span>
+                                  {formatViewCount(video.view_count)} vistas
+                                </span>
+                                {video.published_at && <span>•</span>}
+                              </>
+                            )}
+                            {video.published_at && (
+                              <span>{formatPublishedAt(video.published_at)}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                  {recommendedVideos.length === 0 && (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400 text-sm">
+                        No hay videos relacionados disponibles
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Recommended Videos Sidebar */}
-          <div className="w-96 bg-[#1a1a24] border-l border-white/10 overflow-y-auto custom-scrollbar">
+          {/* Recommended Videos Sidebar - Desktop Only */}
+          <div className="hidden lg:block w-96 bg-[#1a1a24] border-l border-white/10 overflow-y-auto custom-scrollbar">
             <div className="p-4">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <svg

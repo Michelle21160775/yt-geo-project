@@ -38,15 +38,21 @@ export const fetchUserHistory = async () => {
  * @returns {Promise<Object>} Added history item
  */
 export const addToHistory = async (userId, videoData) => {
+    // Validate required data
+    if (!videoData || !videoData.videoId) {
+        console.warn('Cannot add to history: missing video data or videoId');
+        return null;
+    }
+
     const historyItem = {
         videoId: videoData.videoId,
-        title: videoData.title,
-        thumbnail: videoData.thumbnail,
-        channel: videoData.channel,
+        title: videoData.title || 'Untitled Video',
+        thumbnail: videoData.thumbnail || videoData.thumbnail_url || '',
+        channel: videoData.channel || videoData.channel_title || 'Unknown Channel',
         channelThumbnail: videoData.channelThumbnail || 'https://yt3.ggpht.com/a/default-user=s28-c-k-c0x00ffffff-no-rj',
         duration: videoData.duration || '0:00',
-        views: videoData.views || '0 views',
-        publishedTime: videoData.publishedTime || 'Unknown',
+        views: videoData.views || videoData.view_count || '0 views',
+        publishedTime: videoData.publishedTime || videoData.published_at || 'Unknown',
         description: videoData.description || '',
         watchProgress: videoData.watchProgress || 0 // percentage of video watched
     };
@@ -60,11 +66,18 @@ export const addToHistory = async (userId, videoData) => {
             },
             body: JSON.stringify(historyItem)
         });
-        if (!response.ok) throw new Error('Failed to add to history');
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Failed to add to history:', response.status, errorData);
+            throw new Error(errorData.message || 'Failed to add to history');
+        }
+        
         return await response.json();
     } catch (error) {
         console.error('Error adding to history:', error);
-        throw error;
+        // Don't throw error to prevent disrupting user experience
+        return null;
     }
 };
 

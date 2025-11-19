@@ -184,12 +184,18 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
 
     const handleVideoClick = (item) => {
         onVideoClick(item.videoId, {
+            videoId: item.videoId,
             title: item.title,
             thumbnail: item.thumbnail,
+            thumbnail_url: item.thumbnail,
             channel: item.channel,
+            channel_title: item.channel,
             views: item.views,
+            view_count: item.views,
             publishedTime: item.publishedTime,
-            description: item.description
+            published_at: item.publishedTime,
+            description: item.description,
+            duration: item.duration || '0:00'
         });
         onClose();
     };
@@ -277,19 +283,7 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10">
-                    <div className="flex items-center gap-4">
-                        {activeTab === 'history' && history.length > 0 && (
-                            <button
-                                onClick={clearAllHistoryItems}
-                                className="flex items-center gap-2 px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 rounded-lg transition-colors text-sm"
-                                title="Borrar todo el historial"
-                            >
-                                <ClearIcon />
-                                Limpiar historial
-                            </button>
-                        )}
-                    </div>
+                <div className="flex items-center justify-end p-6 border-b border-white/10">
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setViewMode('grid')}
