@@ -71,14 +71,16 @@ const ResultsDisplay = ({
             <span className="text-sm text-gray-400 font-normal">({related_channels.length})</span>
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {related_channels.map((channel) => (
-              <RelatedChannelCard
-                key={channel.channel_id}
-                channel={channel}
-                onChannelClick={onChannelClick}
-                onVideoClick={onVideoClick}
-              />
-            ))}
+            {related_channels
+              .filter(channel => channel && channel.channel_id)
+              .map((channel, index) => (
+                <RelatedChannelCard
+                  key={`${channel.channel_id}-${index}`}
+                  channel={channel}
+                  onChannelClick={onChannelClick}
+                  onVideoClick={onVideoClick}
+                />
+              ))}
           </div>
         </section>
       )}
@@ -95,13 +97,15 @@ const ResultsDisplay = ({
             <span className="text-sm text-gray-400 font-normal">({other_videos.length})</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-x-4 lg:gap-y-6">
-            {other_videos.map((video) => (
-              <VideoCard
-                key={video.video_id}
-                video={video}
-                onVideoClick={onVideoClick}
-              />
-            ))}
+            {other_videos
+              .filter(video => video && video.video_id)
+              .map((video, index) => (
+                <VideoCard
+                  key={`${video.video_id}-${index}`}
+                  video={video}
+                  onVideoClick={onVideoClick}
+                />
+              ))}
           </div>
         </section>
       )}
