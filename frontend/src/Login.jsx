@@ -484,6 +484,7 @@ function Login({ onLoginSuccess }) {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
                     // Añadimos padding a la derecha para el botón de ojo
                     className="w-full px-4 py-3.5 bg-[#b8b8d1]/80 text-[#2a2a3a] placeholder-[#4a4a5a] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition font-medium pr-12"
                   />

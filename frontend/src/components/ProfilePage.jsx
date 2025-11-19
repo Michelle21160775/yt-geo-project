@@ -531,6 +531,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                             name="newPassword"
                                             value={passwordData.newPassword}
                                             onChange={handlePasswordInputChange}
+                                            autoComplete="new-password"
                                             className={`w-full px-4 py-3 pr-12 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
                                                 errors.newPassword
                                                     ? 'border-red-500 focus:ring-red-400'
@@ -565,6 +566,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
                                             name="confirmPassword"
                                             value={passwordData.confirmPassword}
                                             onChange={handlePasswordInputChange}
+                                            autoComplete="new-password"
                                             className={`w-full px-4 py-3 pr-12 text-white border rounded-lg focus:outline-none focus:ring-2 transition-colors profile-input ${
                                                 errors.confirmPassword
                                                     ? 'border-red-500 focus:ring-red-400'
