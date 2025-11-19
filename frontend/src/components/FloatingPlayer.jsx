@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const FloatingPlayer = ({ 
   videoId, 
@@ -8,9 +8,77 @@ const FloatingPlayer = ({
   onToggleMinimize, 
   onExpand
 }) => {
+  const playerRef = useRef(null);
+  const youtubePlayerRef = useRef(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+
   const playerSize = isMinimized 
     ? { width: '200px', height: '112px' }
     : { width: '356px', height: '200px' };
+
+  // YouTube Player Initialization
+  useEffect(() => {
+    if (!videoId || !playerRef.current) return;
+
+    const loadYouTubeAPI = () => {
+      if (window.YT && window.YT.Player) {
+        initializePlayer();
+        return;
+      }
+
+      if (!window.onYouTubeIframeAPIReady) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = initializePlayer;
+      } else {
+        initializePlayer();
+      }
+    };
+
+    const initializePlayer = () => {
+      if (youtubePlayerRef.current) {
+        youtubePlayerRef.current.destroy();
+      }
+
+      youtubePlayerRef.current = new window.YT.Player(playerRef.current, {
+        videoId: videoId,
+        width: '100%',
+        height: '100%',
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          enablejsapi: 1,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (event) => {
+            setIsPlayerReady(true);
+            console.log('Floating Player Ready');
+          },
+          onError: (event) => {
+            console.error('Floating Player Error:', event.data);
+          },
+        },
+      });
+    };
+
+    loadYouTubeAPI();
+
+    return () => {
+      if (youtubePlayerRef.current) {
+        try {
+          youtubePlayerRef.current.destroy();
+        } catch (error) {
+          console.log('Error destroying floating player:', error);
+        }
+      }
+    };
+  }, [videoId]);
 
   return (
     <div 
@@ -73,16 +141,13 @@ const FloatingPlayer = ({
       </div>
 
       {/* Video Player */}
-      <div className="relative">
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0`}
-          width="100%"
-          height={isMinimized ? "80" : "168"}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="rounded-b-lg"
-        />
+      <div className="relative bg-black rounded-b-lg overflow-hidden" style={{ height: isMinimized ? '80px' : '168px' }}>
+        <div ref={playerRef} className="w-full h-full"></div>
+        {!isPlayerReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          </div>
+        )}
       </div>
     </div>
   );
