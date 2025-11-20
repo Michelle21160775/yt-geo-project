@@ -77,27 +77,6 @@ function App({ user, onLogout }) {
     // Check if user is guest
     const isGuestUser = currentUser?.isGuest === true;
 
-    // Test Sentry logging and error tracking
-    const testSentryError = () => {
-        // Send test logs using Sentry.logger (as per documentation)
-        Sentry.logger.info('User triggered test log', { 
-            log_source: 'sentry_test',
-            timestamp: new Date().toISOString(),
-            user: currentUser?.email || 'guest'
-        });
-        
-        // Also test console logs (captured by consoleIntegration)
-        console.log("🧪 Testing Sentry - Log message");
-        console.warn("⚠️ Testing Sentry - Warning message");
-        console.error("❌ Testing Sentry - Error message");
-        
-        // Capture a manual message
-        Sentry.captureMessage("Test message from Video Finder app", "info");
-        
-        // Throw an error to test error tracking
-        throw new Error("🔥 Test error for Sentry - This is intentional!");
-    };
-
     const addVideoToHistory = async (videoInfo) => {
         if (!currentUser || isGuestUser) return; // Don't save history for guests
         
@@ -117,11 +96,9 @@ function App({ user, onLogout }) {
 
     // Favorites hook
     const {
-        favorites,
         favoriteCount,
         toggleVideoFavorite,
-        isVideoFavorited,
-        loadFavorites
+        isVideoFavorited
     } = useFavorites(currentUser?.id || currentUser?.email);
 
     // Function to get user initials
@@ -178,6 +155,18 @@ function App({ user, onLogout }) {
             regionCode: 'MX'
         };
 
+        // Log search event to Sentry
+        Sentry.addBreadcrumb({
+            category: 'user_action',
+            message: 'Usuario realizó una búsqueda',
+            level: 'info',
+            data: {
+                query: query,
+                radius: radius,
+                location: `${location.lat},${location.lon}`
+            }
+        });
+
         // Log request start
         logHttpRequest('POST', endpoint, requestData);
 
@@ -200,6 +189,19 @@ function App({ user, onLogout }) {
             // Log error with details
             logHttpError('POST', endpoint, err, duration);
             
+            // Capture search error to Sentry
+            Sentry.captureException(err, {
+                tags: { 
+                    action: 'search',
+                    query: query 
+                },
+                extra: {
+                    endpoint: endpoint,
+                    radius: radius,
+                    location: `${location.lat},${location.lon}`
+                }
+            });
+            
             setError('Hubo un error al buscar. Intenta de nuevo más tarde.');
             console.error('Search error:', err);
         } finally {
@@ -208,25 +210,52 @@ function App({ user, onLogout }) {
     };
 
     const handleVideoClick = async (videoId, videoInfo = null) => {
-        setCurrentVideoId(videoId);
-        setCurrentVideoInfo(videoInfo);
-        setShowWatchPage(true);
-        setIsPlayerMinimized(false);
-        await addVideoToHistory({ ...videoInfo, videoId });
+        // Log video view to Sentry
+        Sentry.addBreadcrumb({
+            category: 'user_action',
+            message: 'Usuario visualizó un video',
+            level: 'info',
+            data: {
+                videoId: videoId,
+                title: videoInfo?.title || 'Unknown',
+                channel: videoInfo?.channel || videoInfo?.channel_title || 'Unknown'
+            }
+        });
 
-        // Get recommended videos (other videos from current search results)
-        if (results) {
-            const allVideos = [
-                ...(results.other_videos || []),
-                ...(results.related_channels || []).flatMap(channel => channel.videos || [])
-            ];
-            // Filter out current video, ensure unique IDs, and get random recommendations
-            const filtered = allVideos
-                .filter(v => v && v.video_id && v.video_id !== videoId)
-                .filter((video, index, self) =>
-                    index === self.findIndex(v => v.video_id === video.video_id)
-                );
-            setRecommendedVideos(filtered.slice(0, 10)); // Limit to 10 recommendations
+        try {
+            setCurrentVideoId(videoId);
+            setCurrentVideoInfo(videoInfo);
+            setShowWatchPage(true);
+            setIsPlayerMinimized(false);
+            await addVideoToHistory({ ...videoInfo, videoId });
+
+            // Get recommended videos (other videos from current search results)
+            if (results) {
+                const allVideos = [
+                    ...(results.other_videos || []),
+                    ...(results.related_channels || []).flatMap(channel => channel.videos || [])
+                ];
+                // Filter out current video, ensure unique IDs, and get random recommendations
+                const filtered = allVideos
+                    .filter(v => v && v.video_id && v.video_id !== videoId)
+                    .filter((video, index, self) =>
+                        index === self.findIndex(v => v.video_id === video.video_id)
+                    );
+                setRecommendedVideos(filtered.slice(0, 10)); // Limit to 10 recommendations
+            }
+        } catch (err) {
+            // Capture video view error to Sentry
+            Sentry.captureException(err, {
+                tags: { 
+                    action: 'video_view',
+                    videoId: videoId 
+                },
+                extra: {
+                    videoTitle: videoInfo?.title || 'Unknown',
+                    errorMessage: err.message
+                }
+            });
+            console.error('Error viewing video:', err);
         }
     };
 
@@ -297,6 +326,23 @@ function App({ user, onLogout }) {
 
             const result = await toggleVideoFavorite(videoData);
 
+            // Log favorite toggle to Sentry
+            Sentry.captureMessage(
+                result.added ? 'Usuario agregó video a favoritos' : 'Usuario removió video de favoritos',
+                {
+                    level: 'info',
+                    tags: { 
+                        action: 'favorite_toggle',
+                        added: result.added 
+                    },
+                    extra: {
+                        videoId: videoId,
+                        title: videoData.title,
+                        channel: videoData.channel
+                    }
+                }
+            );
+
             // Show success message
             if (result.added) {
                 console.log('Video added to favorites');
@@ -306,6 +352,18 @@ function App({ user, onLogout }) {
 
             return result;
         } catch (error) {
+            // Capture favorite error to Sentry
+            Sentry.captureException(error, {
+                tags: { 
+                    action: 'favorite_toggle',
+                    videoId: videoId 
+                },
+                extra: {
+                    videoTitle: videoInfo?.title || 'Unknown',
+                    errorMessage: error.message
+                }
+            });
+
             console.error('Error toggling favorite:', error);
             setError('Error al gestionar favoritos');
         }
