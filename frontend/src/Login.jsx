@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import * as Sentry from "@sentry/react";
 
 // Base URL for backend API. If VITE_API_URL is not set, fallback to localhost:3001
 const BASE_API = import.meta?.env?.VITE_API_URL || 'http://localhost:3001';
@@ -306,10 +307,39 @@ function Login({ onLoginSuccess }) {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
+      // Log successful login/register to Sentry
+      Sentry.setUser({ 
+        email: response.data.user.email,
+        id: response.data.user.id 
+      });
+      
+      Sentry.captureMessage(
+        isRegister ? 'Usuario registrado exitosamente' : 'Usuario inició sesión',
+        {
+          level: 'info',
+          tags: { 
+            action: isRegister ? 'register' : 'login',
+            email: response.data.user.email 
+          }
+        }
+      );
+
       if (onLoginSuccess) {
         onLoginSuccess(response.data.user);
       }
     } catch (err) {
+      // Log authentication error to Sentry
+      Sentry.captureException(err, {
+        tags: { 
+          action: isRegister ? 'register' : 'login',
+          email: email 
+        },
+        extra: {
+          errorMessage: err.response?.data?.error || err.message,
+          endpoint: isRegister ? 'register' : 'login'
+        }
+      });
+
       setError(
         err.response?.data?.error ||
           "Error al autenticar. Verifica tus credenciales o intenta registrarte."

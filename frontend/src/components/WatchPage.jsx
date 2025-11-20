@@ -11,7 +11,6 @@ const WatchPage = ({
   isGuestUser = false,
 }) => {
   const playerRef = useRef(null);
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const youtubePlayerRef = useRef(null);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [heartKey, setHeartKey] = useState(0); // Para forzar re-render de la animación
@@ -42,7 +41,7 @@ const WatchPage = ({
       if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
       if (diffDays < 365) return `Hace ${Math.floor(diffDays / 30)} meses`;
       return `Hace ${Math.floor(diffDays / 365)} años`;
-    } catch (error) {
+    } catch {
       return "";
     }
   };
@@ -84,8 +83,8 @@ const WatchPage = ({
         }
       }
 
-      return duration;
-    } catch (error) {
+      return duration || "";
+    } catch {
       return duration || "";
     }
   };
@@ -151,8 +150,7 @@ const WatchPage = ({
           origin: window.location.origin,
         },
         events: {
-          onReady: (event) => {
-            setIsPlayerReady(true);
+          onReady: () => {
             console.log("YouTube Player Ready");
           },
           onError: (event) => {

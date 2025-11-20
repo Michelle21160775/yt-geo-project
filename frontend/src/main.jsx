@@ -9,6 +9,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 
+/* eslint-disable react-refresh/only-export-components */
+
 // Initialize Sentry for error tracking and performance monitoring
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -43,11 +45,16 @@ if (typeof window !== 'undefined') {
     let support = false;
     try {
       const opts = Object.defineProperty({}, 'passive', {
-        get() { support = true; }
+        get() { 
+          support = true;
+          return true;
+        }
       });
       window.addEventListener('test', null, opts);
       window.removeEventListener('test', null, opts);
-    } catch (e) {}
+    } catch {
+      // Ignore error
+    }
     return support;
   })();
 
@@ -112,6 +119,14 @@ function AppWrapper() {
   }, [navigate]);
 
   const handleLogout = () => {
+    // Log logout to Sentry and clear user
+    Sentry.captureMessage('Usuario cerró sesión', {
+      level: 'info',
+      tags: { action: 'logout' }
+    });
+    
+    Sentry.setUser(null);
+    
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/login';
@@ -123,7 +138,7 @@ function AppWrapper() {
 function LoginWrapper() {
   const navigate = useNavigate();
 
-  const handleLoginSuccess = (userData) => {
+  const handleLoginSuccess = () => {
     navigate('/', { replace: true });
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
     fetchUserHistory, 
     addToHistory, 
@@ -13,7 +13,7 @@ export const useHistory = (userId) => {
     const [error, setError] = useState(null);
 
     // Fetch user history
-    const loadHistory = async () => {
+    const loadHistory = useCallback(async () => {
         if (!userId) return;
         
         setLoading(true);
@@ -27,7 +27,7 @@ export const useHistory = (userId) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [userId]);
 
     // Add video to history
     const addVideoToHistory = async (videoData) => {
@@ -111,7 +111,7 @@ export const useHistory = (userId) => {
     // Load history on mount and when userId changes
     useEffect(() => {
         loadHistory();
-    }, [userId]);
+    }, [userId, loadHistory]);
 
     return {
         history,

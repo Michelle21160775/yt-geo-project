@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserProfile, updateUserProfile, updateUserPassword } from '../services/profileAPI';
 import '../styles/profile.css';
@@ -25,7 +25,6 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState('');
-    const fileInputRef = useRef(null);
 
     // Fetch latest profile when modal mounts
     React.useEffect(() => {
@@ -57,7 +56,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
 
         loadProfile();
         return () => { mounted = false; };
-    }, []);
+    }, [updateProfile]);
 
     // Iconos SVG
     const UserIcon = () => (
@@ -146,6 +145,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         }
     };
 
+    /* Disabled - Profile image upload feature not currently active
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -183,6 +183,7 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
             reader.readAsDataURL(file);
         }
     };
+    */
 
     const validateProfileForm = () => {
         const newErrors = {};
@@ -289,11 +290,6 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const getUserInitials = (email) => {
-        if (!email) return 'U';
-        return email.charAt(0).toUpperCase();
     };
 
     return (

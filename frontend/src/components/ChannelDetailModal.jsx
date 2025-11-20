@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 // Base API (use VITE_API_URL if set, fallback to localhost:3001)
 const BASE_API = import.meta?.env?.VITE_API_URL || 'http://localhost:3001';
@@ -17,13 +17,7 @@ const ChannelDetailModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && channel && location) {
-      fetchChannelVideos();
-    }
-  }, [isOpen, channel, location, radius]);
-
-  const fetchChannelVideos = async () => {
+  const fetchChannelVideos = useCallback(async () => {
     setLoading(true);
     setError('');
     
@@ -42,7 +36,13 @@ const ChannelDetailModal = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [channel, location, radius]);
+
+  useEffect(() => {
+    if (isOpen && channel && location) {
+      fetchChannelVideos();
+    }
+  }, [isOpen, channel, location, radius, fetchChannelVideos]);
 
   if (!isOpen || !channel) return null;
 

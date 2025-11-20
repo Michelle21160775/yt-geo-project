@@ -7,7 +7,7 @@ const CommentsModal = ({ isOpen, onClose, userName, userEmail }) => {
     // Nuevo campo obligatorio: nombre completo
     const [fullName, setFullName] = useState(userName || '');
     // Campo correo (antes "Nombre / Identificación")
-    const [email, setEmail] = useState(userEmail || '');
+    const [email] = useState(userEmail || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
