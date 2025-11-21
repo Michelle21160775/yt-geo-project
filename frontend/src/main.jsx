@@ -36,6 +36,8 @@ Sentry.init({
   debug: import.meta.env.VITE_SENTRY_DEBUG === 'true',
   // Environment
   environment: import.meta.env.MODE,
+  // Release version for proper source map association
+  release: import.meta.env.VITE_SENTRY_RELEASE || 'local-dev',
 })
 
 // Make touch/wheel events passive by default to improve scroll performance
