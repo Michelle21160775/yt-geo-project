@@ -10,10 +10,9 @@ const getAuthToken = () => {
 
 /**
  * Fetch user's favorite videos
- * @param {string} userId - User ID
  * @returns {Promise<Array>} Array of favorite videos
  */
-export const fetchUserFavorites = async (userId) => {
+export const fetchUserFavorites = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/favorites`, {
             headers: {

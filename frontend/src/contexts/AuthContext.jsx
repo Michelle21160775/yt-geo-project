@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+/* eslint-disable react-refresh/only-export-components */
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -59,3 +60,4 @@ export const useAuth = () => {
     }
     return context;
 };
+/* eslint-enable react-refresh/only-export-components */

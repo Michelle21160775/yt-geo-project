@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
     fetchUserFavorites, 
     addToFavorites, 
@@ -16,7 +16,7 @@ export const useFavorites = (userId) => {
     const isGuest = userId === 'guest' || !userId;
 
     // Fetch user favorites
-    const loadFavorites = async () => {
+    const loadFavorites = useCallback(async () => {
         if (!userId || isGuest) return; // Don't load favorites for guests
         
         setLoading(true);
@@ -30,7 +30,7 @@ export const useFavorites = (userId) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [userId, isGuest]);
 
     // Add video to favorites
     const addFavorite = async (videoData) => {
@@ -105,7 +105,7 @@ export const useFavorites = (userId) => {
     // Load favorites on mount and when userId changes
     useEffect(() => {
         loadFavorites();
-    }, [userId]);
+    }, [userId, loadFavorites]);
 
     return {
         favorites,

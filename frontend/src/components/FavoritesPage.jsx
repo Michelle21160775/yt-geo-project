@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchUserFavorites, removeFromFavorites } from '../utils/favoritesAPI';
-import { fetchUserHistory, removeFromHistory, clearAllHistory } from '../utils/historyAPI';
+import { fetchUserHistory, removeFromHistory } from '../utils/historyAPI';
 
 const FavoritesPage = ({ user, onVideoClick, onClose }) => {
     const [activeTab, setActiveTab] = useState('favorites'); // 'favorites' or 'history'
@@ -8,7 +8,7 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-    const [sortBy, setSortBy] = useState('dateAdded'); // 'dateAdded', 'title', 'channel'
+    const [sortBy] = useState('dateAdded'); // 'dateAdded', 'title', 'channel'
 
     // Icons
     const CloseIcon = () => (
@@ -75,7 +75,7 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
     );
 
     // Fetch data functions
-    const fetchFavorites = async () => {
+    const fetchFavorites = useCallback(async () => {
         try {
             const userFavorites = await fetchUserFavorites(user?.id || 'demo_user');
             setFavorites(userFavorites);
@@ -83,9 +83,9 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
             console.error('Error fetching favorites:', error);
             setFavorites([]);
         }
-    };
+    }, [user?.id]);
 
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         try {
             const userHistory = await fetchUserHistory(user?.id || 'demo_user');
             setHistory(userHistory);
@@ -93,16 +93,16 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
             console.error('Error fetching history:', error);
             setHistory([]);
         }
-    };
+    }, [user?.id]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             await Promise.all([fetchFavorites(), fetchHistory()]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchFavorites, fetchHistory]);
 
     // Remove functions
     const removeFavorite = async (favoriteId) => {
@@ -123,20 +123,9 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
         }
     };
 
-    const clearAllHistoryItems = async () => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar todo el historial?')) {
-            try {
-                await clearAllHistory(user?.id || 'demo_user');
-                setHistory([]);
-            } catch (error) {
-                console.error('Error clearing history:', error);
-            }
-        }
-    };
-
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const formatDate = (date) => {
         return new Intl.DateTimeFormat('es-ES', {
@@ -165,7 +154,6 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
 
     // Get current data based on active tab
     const currentData = activeTab === 'favorites' ? favorites : history;
-    const currentSortField = activeTab === 'favorites' ? 'dateAdded' : 'watchedAt';
 
     const sortedData = [...currentData].sort((a, b) => {
         switch (sortBy) {
@@ -175,10 +163,11 @@ const FavoritesPage = ({ user, onVideoClick, onClose }) => {
                 return a.channel.localeCompare(b.channel);
             case 'dateAdded':
             case 'watchedAt':
-            default:
+            default: {
                 const dateFieldA = activeTab === 'favorites' ? a.dateAdded : a.watchedAt;
                 const dateFieldB = activeTab === 'favorites' ? b.dateAdded : b.watchedAt;
                 return new Date(dateFieldB) - new Date(dateFieldA);
+            }
         }
     });
 

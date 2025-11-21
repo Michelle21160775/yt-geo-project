@@ -56,7 +56,7 @@ const FloatingPlayer = ({
           origin: window.location.origin,
         },
         events: {
-          onReady: (event) => {
+          onReady: () => {
             setIsPlayerReady(true);
             console.log('Floating Player Ready');
           },
