@@ -66,7 +66,7 @@ const updateUser = async (userId, updateData) => {
         { returnDocument: 'after' }
     );
 
-    return result.value;
+    return result;
 };
 
 const updateUserPassword = async (userId, hashedPassword) => {
@@ -85,7 +85,7 @@ const updateUserPassword = async (userId, hashedPassword) => {
         { returnDocument: 'after' }
     );
 
-    return result.value;
+    return result;
 };
 
 module.exports = {
