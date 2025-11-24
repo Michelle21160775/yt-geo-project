@@ -56,7 +56,8 @@ const ProfilePage = ({ user, onUpdateProfile, onClose }) => {
 
         loadProfile();
         return () => { mounted = false; };
-    }, [updateProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Iconos SVG
     const UserIcon = () => (
